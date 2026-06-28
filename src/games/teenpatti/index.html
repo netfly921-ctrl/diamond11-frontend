@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Teen Patti - Diamond 11</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <style>
+    :root{
+      --bg:#050510; --glass:rgba(255,255,255,.04); --border:rgba(255,255,255,.10);
+      --gold:#ffd966; --green:#00ff88; --red:#ff2a2a; --orange:#fb923c; --muted:#8b9bb4;
+      --blue:#60a5fa;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:var(--bg);font-family:Segoe UI,sans-serif;color:#fff;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:15px;padding-top:60px}
+    #topBar{
+      position:fixed;top:0;left:0;right:0;height:45px;background:#111827;
+      display:flex;align-items:center;justify-content:space-between;padding:0 16px;
+      z-index:99999;border-bottom:2px solid var(--gold);font-weight:900
+    }
+    .wrap{
+      width:100%;max-width:520px;background:var(--glass);backdrop-filter:blur(18px);
+      border:1px solid var(--border);border-radius:22px;padding:16px
+    }
+    .poster{
+      height:105px;border-radius:16px;border:1px solid var(--border);overflow:hidden;position:relative;margin-bottom:12px;
+      background:
+        linear-gradient(135deg, rgba(255,42,42,.18), rgba(0,0,0,.65)),
+        url('teenpatti-poster.jpg') center/cover no-repeat;
+    }
+    .sound-btn{
+      position:absolute;top:10px;right:10px;width:38px;height:38px;border-radius:12px;
+      display:grid;place-items:center;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12);
+      color:#fff;cursor:pointer;
+    }
+    .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+    .logo{font-weight:900;font-size:1.25rem;background:linear-gradient(90deg,var(--orange),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .bal{color:var(--green);font-weight:900}
+
+    .table{
+      background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:18px;
+      padding:12px;margin-bottom:12px;
+    }
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .side{
+      background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:10px;
+    }
+    .side h3{font-size:.9rem;letter-spacing:.6px;text-transform:uppercase}
+    .side h3.player{color:var(--green)}
+    .side h3.dealer{color:var(--blue)}
+    .handRank{margin-top:6px;color:var(--muted);font-weight:800;font-size:.8rem;min-height:18px}
+    .cards{display:flex;gap:8px;margin-top:10px}
+    .card{
+      width:62px;height:84px;border-radius:12px;
+      background:linear-gradient(135deg, rgba(255,255,255,.10), rgba(0,0,0,.35));
+      border:1px solid rgba(255,255,255,.12);
+      display:flex;align-items:center;justify-content:center;font-weight:900;
+      box-shadow:0 8px 20px rgba(0,0,0,.4);
+      transition:.25s;
+    }
+    .card.hidden{background:rgba(0,0,0,.4);color:transparent}
+    .card .small{font-size:.72rem;font-weight:900;opacity:.9}
+    .card.red{color:#ff6b6b}
+    .card.black{color:#e5e7eb}
+
+    .centerMsg{
+      margin-top:12px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;padding:10px;text-align:center;font-weight:900;min-height:44px;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+    }
+    .badge{padding:6px 10px;border-radius:999px;font-weight:900;font-size:.85rem;border:1px solid rgba(255,255,255,.12)}
+    .badge.win{background:rgba(0,255,136,.12);color:var(--green)}
+    .badge.lose{background:rgba(255,42,42,.12);color:var(--red)}
+    .badge.info{background:rgba(255,217,102,.12);color:var(--gold)}
+
+    .panel{background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:18px;padding:12px}
+    .bet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+    .bet-btn{
+      padding:14px;border-radius:14px;border:2px solid transparent;background:rgba(255,255,255,.05);
+      color:#fff;font-weight:900;cursor:pointer;text-transform:uppercase;
+    }
+    .bet-btn.player{border-color:rgba(0,255,136,.25);background:rgba(0,255,136,.07)}
+    .bet-btn.dealer{border-color:rgba(96,165,250,.25);background:rgba(96,165,250,.07)}
+    .bet-btn.tie{border-color:rgba(255,217,102,.22);background:rgba(255,217,102,.08)}
+    .bet-btn.active{box-shadow:0 0 18px rgba(251,146,60,.18);transform:translateY(-1px)}
+
+    label{font-size:.72rem;color:var(--muted);font-weight:800;letter-spacing:.7px}
+    input{
+      width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.35);color:#fff;font-weight:800;outline:none;margin-top:6px
+    }
+    .quick{display:flex;gap:6px;margin-top:8px}
+    .qbtn{flex:1;padding:7px;border-radius:10px;border:none;background:rgba(255,255,255,.06);color:#cbd5e1;font-weight:900;cursor:pointer}
+    .play{
+      width:100%;margin-top:10px;padding:14px;border:none;border-radius:14px;cursor:pointer;
+      background:linear-gradient(135deg,var(--orange),#ff6b00);color:#000;font-weight:900;text-transform:uppercase;
+      box-shadow:0 8px 24px rgba(251,146,60,.24)
+    }
+    .play:disabled{opacity:.55;cursor:not-allowed}
+    .hist{display:flex;gap:6px;overflow:auto;padding:8px 0;margin-top:10px}
+    .pill{flex:0 0 auto;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);font-weight:900;font-size:.78rem}
+    .pill.p{color:var(--green);background:rgba(0,255,136,.10)}
+    .pill.d{color:var(--blue);background:rgba(96,165,250,.10)}
+    .pill.t{color:var(--gold);background:rgba(255,217,102,.10)}
+
+    .toast{
+      position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-120px);
+      background:rgba(0,0,0,.92);border:1px solid var(--orange);color:#fff;
+      padding:12px 20px;border-radius:14px;z-index:100000;transition:.25s;
+      font-weight:900;
+    }
+    .toast.show{transform:translateX(-50%) translateY(0)}
+  </style>
+
+  <script>
+    const soundManager = {
+      win:null, lose:null, click:null, enabled:true,
+      init(){
+        this.enabled = localStorage.getItem('D11_SOUND') !== '0';
+        this.win = new Audio('win.mp3');
+        this.lose = new Audio('lose.mp3');
+        this.click = new Audio('click.mp3');
+        this.win.volume=.7; this.lose.volume=.6; this.click.volume=.4;
+        this.updateBtn();
+        document.addEventListener('click', () => {
+          [this.win,this.lose,this.click].forEach(a => a.play().then(()=>a.pause()).catch(()=>{}));
+        }, { once:true });
+      },
+      updateBtn(){
+        const b=document.getElementById('soundBtn');
+        if(!b) return;
+        b.innerHTML = this.enabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
+        b.style.opacity = this.enabled ? '1' : '0.65';
+      },
+      play(t){ if(!this.enabled || !this[t]) return; try{ this[t].currentTime=0; this[t].play().catch(()=>{});}catch(e){} }
+    };
+    window.toggleSound=()=>{ soundManager.enabled=!soundManager.enabled; localStorage.setItem('D11_SOUND', soundManager.enabled?'1':'0'); soundManager.updateBtn(); soundManager.play('click'); };
+    window.addEventListener('load', ()=>soundManager.init());
+  </script>
+</head>
+<body>
+  <div id="topBar">
+    <div><i class="fa-solid fa-spade"></i> TEEN PATTI</div>
+    <div style="color:var(--gold)">₹<span id="topBal">0.00</span></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="wrap">
+    <div class="poster">
+      <button class="sound-btn" id="soundBtn" onclick="toggleSound()"><i class="fa-solid fa-volume-high"></i></button>
+    </div>
+
+    <div class="head">
+      <div class="logo">🃏 TEEN PATTI PRO</div>
+      <div class="bal">₹<span id="bal">0.00</span></div>
+    </div>
+
+    <div class="table">
+      <div class="row2">
+        <div class="side">
+          <h3 class="player">Player</h3>
+          <div class="handRank" id="pRank">Waiting...</div>
+          <div class="cards" id="pCards">
+            <div class="card hidden">?</div><div class="card hidden">?</div><div class="card hidden">?</div>
+          </div>
+        </div>
+        <div class="side">
+          <h3 class="dealer">Dealer</h3>
+          <div class="handRank" id="dRank">Waiting...</div>
+          <div class="cards" id="dCards">
+            <div class="card hidden">?</div><div class="card hidden">?</div><div class="card hidden">?</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="centerMsg" id="centerMsg">
+        <span class="badge info">READY</span>
+        <span style="color:var(--muted)">Select bet & PLAY</span>
+      </div>
+
+      <div class="hist" id="hist"></div>
+    </div>
+
+    <div class="panel">
+      <div class="bet-grid">
+        <button class="bet-btn player active" id="betPlayer" onclick="pick('player')">Player<br><small>2×</small></button>
+        <button class="bet-btn tie" id="betTie" onclick="pick('tie')">Tie<br><small>8×</small></button>
+        <button class="bet-btn dealer" id="betDealer" onclick="pick('dealer')">Dealer<br><small>2×</small></button>
+      </div>
+
+      <label>BET AMOUNT</label>
+      <input id="betAmt" type="number" min="10" value="10"/>
+
+      <div class="quick">
+        <button class="qbtn" onclick="qBet(0.5)">½</button>
+        <button class="qbtn" onclick="qBet(2)">2×</button>
+        <button class="qbtn" onclick="qBet('max')">Max</button>
+      </div>
+
+      <button class="play" id="playBtn" onclick="play()">PLAY</button>
+    </div>
+  </div>
+
+<script>
+  const API='http://localhost:5000/api';
+  const token = new URLSearchParams(location.search).get('token');
+  const gameCode='teenpatti';
+
+  let balance=0;
+  let busy=false;
+  let pickSide='player';
+  let history=[];
+
+  function toast(msg){
+    const t=document.getElementById('toast');
+    t.textContent=msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2400);
+  }
+
+  async function fetchBalance(){
+    if(!token){
+      document.getElementById('bal').textContent='Login';
+      document.getElementById('topBal').textContent='Login';
+      return;
+    }
+    try{
+      const r=await fetch(`${API}/wallet/balance`, { headers:{ Authorization:`Bearer ${token}` }});
+      const d=await r.json();
+      if(d.success){
+        balance = d.data.balance || 0;
+        document.getElementById('bal').textContent = balance.toFixed(2);
+        document.getElementById('topBal').textContent = balance.toFixed(2);
+      }
+    }catch(e){}
+  }
+
+  window.pick=(s)=>{
+    if(busy) return;
+    soundManager.play('click');
+    pickSide=s;
+    document.getElementById('betPlayer').classList.toggle('active', s==='player');
+    document.getElementById('betDealer').classList.toggle('active', s==='dealer');
+    document.getElementById('betTie').classList.toggle('active', s==='tie');
+  };
+
+  window.qBet=(m)=>{
+    if(busy) return;
+    soundManager.play('click');
+    const inp=document.getElementById('betAmt');
+    const v=parseFloat(inp.value||10);
+    if(m==='max') inp.value=Math.max(10, Math.floor(balance));
+    else inp.value=Math.max(10, Math.floor(v*m));
+  };
+
+  function cryptoInt(maxExclusive){
+    const a=new Uint32Array(1);
+    crypto.getRandomValues(a);
+    return a[0] % maxExclusive;
+  }
+
+  function buildDeck(){
+    const suits=['♠','♥','♦','♣'];
+    const ranks=[2,3,4,5,6,7,8,9,10,11,12,13,14]; // 11 J,12 Q,13 K,14 A
+    const deck=[];
+    for(const s of suits) for(const r of ranks) deck.push({suit:s, rank:r});
+    // shuffle Fisher-Yates with crypto
+    for(let i=deck.length-1;i>0;i--){
+      const j = cryptoInt(i+1);
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    return deck;
+  }
+
+  function rankName(r){
+    if(r===14) return 'A';
+    if(r===13) return 'K';
+    if(r===12) return 'Q';
+    if(r===11) return 'J';
+    return String(r);
+  }
+  function isRedSuit(s){ return s==='♥' || s==='♦'; }
+
+  function sortRanksDesc(cards){ return [...cards].map(c=>c.rank).sort((a,b)=>b-a); }
+
+  function isFlush(cards){ return cards.every(c=>c.suit===cards[0].suit); }
+
+  function isStraight(ranks){
+    const r=[...ranks].sort((a,b)=>a-b);
+    // A-2-3 special
+    const a23 = (r[0]===2 && r[1]===3 && r[2]===14);
+    if(a23) return { ok:true, high:3 };
+    if(r[0]+1===r[1] && r[1]+1===r[2]) return { ok:true, high:r[2] };
+    return { ok:false, high:0 };
+  }
+
+  // Teen Patti categories (higher better):
+  // 6 Trail, 5 Pure Sequence, 4 Sequence, 3 Color, 2 Pair, 1 High Card
+  function evalHand(cards){
+    const ranks = cards.map(c=>c.rank);
+    const counts = {};
+    ranks.forEach(r=>counts[r]=(counts[r]||0)+1);
+    const unique = Object.keys(counts).map(Number);
+    const sortedDesc = sortRanksDesc(cards);
+
+    const flush = isFlush(cards);
+    const straight = isStraight(ranks);
+
+    // Trail
+    if(unique.length===1){
+      return { cat:6, name:'Trail', tiebreak:[unique[0]] };
+    }
+    // Pure Sequence
+    if(flush && straight.ok){
+      return { cat:5, name:'Pure Seq', tiebreak:[straight.high] };
+    }
+    // Sequence
+    if(straight.ok){
+      return { cat:4, name:'Sequence', tiebreak:[straight.high] };
+    }
+    // Color
+    if(flush){
+      return { cat:3, name:'Color', tiebreak:sortedDesc };
+    }
+    // Pair
+    if(unique.length===2){
+      const pairRank = unique.find(r=>counts[r]===2);
+      const kicker = unique.find(r=>counts[r]===1);
+      return { cat:2, name:'Pair', tiebreak:[pairRank, kicker] };
+    }
+    // High Card
+    return { cat:1, name:'High Card', tiebreak:sortedDesc };
+  }
+
+  function compareEval(a,b){
+    if(a.cat !== b.cat) return a.cat > b.cat ? 1 : -1;
+    const len = Math.max(a.tiebreak.length, b.tiebreak.length);
+    for(let i=0;i<len;i++){
+      const av=a.tiebreak[i] ?? 0;
+      const bv=b.tiebreak[i] ?? 0;
+      if(av!==bv) return av>bv ? 1 : -1;
+    }
+    return 0;
+  }
+
+  function renderCards(containerId, cards, hidden=false){
+    const el=document.getElementById(containerId);
+    el.innerHTML='';
+    for(const c of cards){
+      const div=document.createElement('div');
+      div.className = 'card' + (hidden ? ' hidden' : (' ' + (isRedSuit(c.suit)?'red':'black')));
+      if(hidden){
+        div.textContent='?';
+      }else{
+        div.innerHTML = `<div class="small">${rankName(c.rank)}${c.suit}</div>`;
+      }
+      el.appendChild(div);
+    }
+  }
+
+  function pushHistory(w){
+    history.unshift(w);
+    if(history.length>15) history.pop();
+    const h=document.getElementById('hist');
+    h.innerHTML='';
+    history.forEach(x=>{
+      const p=document.createElement('div');
+      p.className='pill ' + (x==='player'?'p':(x==='dealer'?'d':'t'));
+      p.textContent = x.toUpperCase();
+      h.appendChild(p);
+    });
+  }
+
+  async function play(){
+    if(busy) return;
+    soundManager.play('click');
+
+    const bet = parseFloat(document.getElementById('betAmt').value)||10;
+    if(bet < 10) return toast('Minimum bet ₹10');
+    if(bet > balance) return toast('Insufficient balance');
+
+    // deduct bet
+    try{
+      const r=await fetch(`${API}/game/place-bet`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json', Authorization:`Bearer ${token}`},
+        body:JSON.stringify({ gameCode, betAmount: bet })
+      });
+      const d=await r.json();
+      if(!d.success) return toast(d.message || 'Bet failed');
+      balance = d.newBalance ?? balance;
+      await fetchBalance();
+    }catch(e){ return toast('Network error'); }
+
+    busy=true;
+    document.getElementById('playBtn').disabled=true;
+
+    // deal
+    const deck=buildDeck();
+    const p=[deck.pop(), deck.pop(), deck.pop()];
+    const d=[deck.pop(), deck.pop(), deck.pop()];
+
+    // show animation: hide then reveal
+    document.getElementById('pRank').textContent='Dealing...';
+    document.getElementById('dRank').textContent='Dealing...';
+    renderCards('pCards', p, true);
+    renderCards('dCards', d, true);
+
+    const msg=document.getElementById('centerMsg');
+    msg.innerHTML = `<span class="badge info">DEALING</span><span style="color:var(--muted)">Cards are coming...</span>`;
+
+    setTimeout(()=>renderCards('pCards', p, false), 450);
+    setTimeout(()=>renderCards('dCards', d, false), 900);
+
+    setTimeout(async ()=>{
+      // evaluate
+      const pe = evalHand(p);
+      const de = evalHand(d);
+      document.getElementById('pRank').textContent = pe.name;
+      document.getElementById('dRank').textContent = de.name;
+
+      const cmp = compareEval(pe, de);
+      const winner = (cmp===0) ? 'tie' : (cmp>0 ? 'player' : 'dealer');
+      pushHistory(winner);
+
+      let isWin = (pickSide === winner);
+      let mult = (pickSide==='tie') ? 8 : 2;
+
+      if(isWin){
+        const winAmount = bet * mult;
+        msg.innerHTML = `<span class="badge win">YOU WIN</span><span style="color:var(--muted)">+₹${winAmount.toFixed(0)} (${mult}x)</span>`;
+        soundManager.play('win');
+        toast(`WIN ₹${winAmount.toFixed(0)} (${mult}x)`);
+        try{
+          await fetch(`${API}/game/cashout`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json', Authorization:`Bearer ${token}`},
+            body:JSON.stringify({ gameCode, betAmount: bet, winAmount, multiplier: mult })
+          });
+          await fetchBalance();
+        }catch(e){}
+      }else{
+        msg.innerHTML = `<span class="badge lose">YOU LOSE</span><span style="color:var(--muted)">-₹${bet.toFixed(0)} (Winner: ${winner.toUpperCase()})</span>`;
+        soundManager.play('lose');
+        toast(`LOSS ₹${bet.toFixed(0)}`);
+      }
+
+      busy=false;
+      document.getElementById('playBtn').disabled=false;
+    }, 1700);
+  }
+
+  fetchBalance();
+  setInterval(fetchBalance, 5000);
+</script>
+</body>
+</html>

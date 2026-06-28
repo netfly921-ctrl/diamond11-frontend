@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+const soundManager = {
+  win: null, lose: null, click: null,
+  enabled: true, unlocked: false,
+  init() {
+    this.enabled = localStorage.getItem('D11_SOUND') !== '0';
+    // ✅ PATH FIX - ab same folder se lega
+    this.win = new Audio('win.mp3');
+    this.lose = new Audio('lose.mp3');
+    this.click = new Audio('click.mp3');
+    this.win.volume = 0.7; this.lose.volume = 0.6; this.click.volume = 0.4;
+    this.applyEnabled();
+  },
+  applyEnabled() {
+    const muted = !this.enabled;
+    if (this.win) this.win.muted = muted;
+    if (this.lose) this.lose.muted = muted;
+    if (this.click) this.click.muted = muted;
+    const btn = document.getElementById('soundToggle');
+    if (btn) {
+      btn.classList.toggle('off', !this.enabled);
+      btn.innerHTML = this.enabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
+    }
+  },
+  unlock() { if (this.unlocked || !this.click) return; try { this.click.muted = true; this.click.play().then(()=>{this.click.pause(); this.click.currentTime=0; this.click.muted=!this.enabled; this.unlocked=true;}).catch(()=>{});} catch(e){} },
+  play(type) { if (!this.enabled || !this[type]) return; this.unlock(); try { this[type].currentTime = 0; this[type].play().catch(()=>{}); } catch(e){} }
+};
+window.addEventListener('load', () => soundManager.init());
+document.addEventListener('pointerdown', () => soundManager.unlock(), { once: true });
+window.toggleSound = () => { soundManager.enabled = !soundManager.enabled; localStorage.setItem('D11_SOUND', soundManager.enabled ? '1' : '0'); soundManager.applyEnabled(); };
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chicken Pro - Diamond 11</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        :root { --bg-dark: #050510; --glass: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08); --neon-orange: #fb923c; --neon-green: #00ff88; --neon-red: #ff2a2a; --text-main: #ffffff; --text-muted: #8b9bb4; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg-dark); font-family: 'Segoe UI', sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; color: white; padding-top: 60px; }
+        #liveBalanceBar { position: fixed; top: 0; left: 0; right: 0; height: 45px; background: #111827; color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; font-size: 14px; font-weight: 600; z-index: 999999; border-bottom: 2px solid #ffd966; }
+        .balance-amount { color: #ffd966; font-size: 16px; font-weight: 700; }
+        .game-wrapper { width: 100%; max-width: 480px; background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 25px; }
+        
+        /* ✅ POSTER PATH FIX */
+        .poster { position: relative; height: 120px; border-radius: 18px; overflow: hidden; margin-bottom: 16px; border: 1px solid var(--glass-border); background: linear-gradient(135deg, rgba(251,146,60,0.25), rgba(255,42,42,0.18)), url('chicken-poster.jpg') center/cover no-repeat; }
+        .poster-overlay { position: absolute; inset: 0; padding: 14px; display: flex; flex-direction: column; justify-content: flex-end; background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.70)); }
+        .poster-title { font-weight: 900; font-size: 1.05rem; letter-spacing: 1px; }
+        .poster-sub { margin-top: 4px; font-size: 0.75rem; color: rgba(255,255,255,0.85); }
+        .sound-toggle { position: absolute; top: 10px; right: 10px; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.12); color: #fff; cursor: pointer; transition: 0.2s; z-index: 2; }
+        .sound-toggle:hover { background: rgba(0,0,0,0.5); transform: translateY(-1px); }
+        .sound-toggle.off { opacity: 0.65; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--glass-border); }
+        .logo { font-weight: 800; font-size: 1.2rem; background: linear-gradient(90deg, var(--neon-orange), var(--neon-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .balance-display { color: var(--neon-green); font-weight: 700; font-size: 1rem; }
+        .payout { text-align: center; font-size: 1.2rem; font-weight: 700; margin: 10px 0 15px; color: var(--neon-green); min-height: 28px; padding: 8px; background: rgba(0,255,136,0.05); border-radius: 10px; border: 1px solid rgba(0,255,136,0.1); }
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
+        .dish { aspect-ratio: 1; background: rgba(0,0,0,0.3); border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; position: relative; overflow: hidden; }
+        .dish:hover:not(.disabled):not(.chicken):not(.bone) { transform: scale(1.05); background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
+        .dish.chicken { background: rgba(0, 255, 136, 0.2); border-color: var(--neon-green); animation: pop 0.3s ease; }
+        .dish.bone { background: rgba(255, 42, 42, 0.2); border-color: var(--neon-red); animation: shake 0.4s ease; }
+        .dish.disabled { cursor: not-allowed; opacity: 0.6; }
+        .dish.reveal { cursor: default; }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+        .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.5px; }
+        input, select { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 12px; color: white; font-size: 1rem; font-weight: 600; outline: none; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--neon-orange); }
+        select option { background: #1a1a2e; color: white; }
+        .quick-bet { display: flex; gap: 5px; margin-top: 8px; }
+        .q-btn { flex: 1; background: rgba(255,255,255,0.05); border: none; border-radius: 6px; color: var(--text-muted); font-size: 0.75rem; padding: 4px; cursor: pointer; transition: 0.2s; }
+        .q-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+        .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 1rem; transition: all 0.2s; text-transform: uppercase; }
+        button:hover:not(:disabled) { transform: translateY(-2px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-start { background: linear-gradient(135deg, var(--neon-orange), #ff6b00); color: black; box-shadow: 0 5px 20px rgba(251,146,60,0.3); }
+        .btn-cashout { background: linear-gradient(135deg, var(--neon-green), #00cc70); color: black; box-shadow: 0 5px 20px rgba(0,255,136,0.3); }
+        .stats-row { display: flex; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 10px; margin-bottom: 15px; font-size: 0.8rem; }
+        .stat { text-align: center; } .stat-val { font-weight: 700; color: var(--neon-orange); } .stat-label { color: var(--text-muted); font-size: 0.65rem; margin-top: 2px; }
+        .toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(0,0,0,0.9); border: 1px solid var(--neon-orange); color: white; padding: 12px 24px; border-radius: 12px; font-size: 0.9rem; z-index: 1000; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .win-popup { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 99999; align-items: center; justify-content: center; }
+        .win-popup.show { display: flex; }
+        .win-box { background: linear-gradient(135deg, #1a2c38, #0f1923); border: 3px solid var(--neon-green); border-radius: 24px; padding: 32px; text-align: center; max-width: 320px; width: 90%; animation: popIn 0.4s ease; box-shadow: 0 0 50px rgba(0,255,136,0.3); }
+        .lose-box { border-color: var(--neon-red) !important; box-shadow: 0 0 50px rgba(255,42,42,0.3) !important; }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+        .win-icon { font-size: 64px; margin-bottom: 12px; animation: bounce 0.6s ease infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .win-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+        .win-amount { font-size: 36px; font-weight: 800; margin-bottom: 16px; }
+        .win-close { background: linear-gradient(135deg, var(--neon-green), #00cc70); color: #000; border: none; padding: 12px 40px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+        .lose-close { background: linear-gradient(135deg, var(--neon-red), #cc0000) !important; color: white !important; }
+    </style>
+</head>
+<body>
+    <div id="liveBalanceBar"><div><i class="fa-solid fa-wallet"></i> Balance</div><div class="balance-amount">₹<span id="topBalanceText">Loading...</span></div></div>
+    <div class="toast" id="toast"></div>
+    <div class="win-popup" id="resultPopup"><div class="win-box" id="resultBox"><div class="win-icon" id="resultIcon">🎉</div><div class="win-title" id="resultTitle">YOU WIN!</div><div class="win-amount" id="resultAmount">+₹0.00</div><button class="win-close" id="resultClose" onclick="closePopup()">COLLECT</button></div></div>
+    <div class="game-wrapper">
+        <div class="poster"><button class="sound-toggle" id="soundToggle" type="button" onclick="toggleSound()"><i class="fa-solid fa-volume-high"></i></button><div class="poster-overlay"><div class="poster-title">CHICKEN PRO</div><div class="poster-sub">Find 🍗 • Avoid 🦴 • Cashout anytime</div></div></div>
+        <div class="header"><div class="logo">🍗 CHICKEN PRO</div><div class="balance-display">₹<span id="balance">Loading...</span></div></div>
+        <div class="payout" id="payout">Select bet & bones to start!</div>
+        <div class="grid" id="grid"></div>
+        <div class="stats-row"><div class="stat"><div class="stat-val" id="statClicks">0</div><div class="stat-label">Found</div></div><div class="stat"><div class="stat-val" id="statMultiplier">1.00x</div><div class="stat-label">Multiplier</div></div><div class="stat"><div class="stat-val" id="statProfit">₹0.00</div><div class="stat-label">Profit</div></div></div>
+        <div class="controls-grid"><div><label>Bet Amount</label><input type="number" id="betInput" value="10" min="10"><div class="quick-bet"><button class="q-btn" onclick="qBet(0.5)">½</button><button class="q-btn" onclick="qBet(2)">2×</button><button class="q-btn" onclick="qBet('max')">Max</button></div></div><div><label>Number Of Bones</label><select id="bonesSelect"><option value="1">1 Bone (Easy)</option><option value="3" selected>3 Bones (Medium)</option><option value="5">5 Bones (Hard)</option><option value="10">10 Bones (Extreme)</option><option value="15">15 Bones (Insane)</option><option value="20">20 Bones (Max Risk)</option></select></div></div>
+        <div class="action-btns"><button class="btn-start" id="startBtn" onclick="startGame()">▶️ START GAME</button><button class="btn-cashout" id="cashoutBtn" onclick="cashout()" disabled>💰 CASHOUT</button></div>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search); const userToken = urlParams.get('token'); const gameCode = 'chicken';
+        let balance = 0; let gameActive = false; let bet = 10; let bones = 3; let traps = []; let clicks = 0;
+        async function fetchBalance() { if (!userToken) { document.getElementById('topBalanceText').textContent = 'Login Required'; document.getElementById('balance').textContent = 'Login Required'; return; } try { const res = await fetch('http://localhost:5000/api/wallet/balance', { headers: { 'Authorization': `Bearer ${userToken}` } }); const data = await res.json(); if (data.success) { balance = data.data.balance || 0; updateBalanceUI(); } } catch (e) { console.error('Balance error:', e); } }
+        function updateBalanceUI() { document.getElementById('balance').textContent = balance.toFixed(2); document.getElementById('topBalanceText').textContent = balance.toFixed(2); parent.postMessage({ type: 'UPDATE_BALANCE', payload: { newBalance: balance } }, '*'); }
+        function buildGrid() { const grid = document.getElementById('grid'); grid.innerHTML = ''; for (let i = 0; i < 25; i++) { const dish = document.createElement('div'); dish.className = 'dish disabled'; dish.innerHTML = '🍽️'; dish.id = `dish-${i}`; dish.onclick = () => clickDish(i); grid.appendChild(dish); } }
+        window.qBet = (mult) => { if (gameActive) return; const inp = document.getElementById('betInput'); if (mult === 'max') { inp.value = Math.floor(balance); } else { inp.value = Math.max(10, Math.floor(parseFloat(inp.value || 10) * mult)); } };
+        window.startGame = async () => { soundManager.play('click'); if (gameActive) return; bet = parseFloat(document.getElementById('betInput').value) || 10; bones = parseInt(document.getElementById('bonesSelect').value) || 3; if (bet < 10) return showToast('Minimum bet is ₹10'); if (bet > balance) return showToast('Insufficient balance!'); try { const res = await fetch('http://localhost:5000/api/game/place-bet', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userToken}` }, body: JSON.stringify({ gameCode, betAmount: bet }) }); const data = await res.json(); if (!data.success) return showToast(data.message || 'Bet failed!'); balance = data.newBalance; updateBalanceUI(); gameActive = true; clicks = 0; traps = generateTraps(bones); buildGrid(); for (let i = 0; i < 25; i++) { document.getElementById(`dish-${i}`).className = 'dish'; } document.getElementById('startBtn').disabled = true; document.getElementById('cashoutBtn').disabled = false; updateStats(); document.getElementById('payout').textContent = '🍗 Find chicken, avoid bones!'; } catch (e) { console.error('Start error:', e); showToast('Network error!'); } };
+        function generateTraps(n) { const traps = []; while (traps.length < n) { const r = Math.floor(Math.random() * 25); if (!traps.includes(r)) traps.push(r); } return traps; }
+        window.clickDish = async (index) => { if (!gameActive) return; const dish = document.getElementById(`dish-${index}`); if (!dish.classList.contains('dish') || dish.classList.contains('chicken') || dish.classList.contains('bone')) return; soundManager.play('click'); if (traps.includes(index)) { dish.className = 'dish bone disabled'; dish.innerHTML = '🦴'; gameActive = false; await gameOver(false); } else { dish.className = 'dish chicken disabled'; dish.innerHTML = '🍗'; clicks++; updateStats(); } };
+        window.cashout = async () => { soundManager.play('click'); if (!gameActive || clicks === 0) return showToast('Find at least 1 chicken first!'); gameActive = false; await gameOver(true); };
+        async function gameOver(isWin) { document.getElementById('startBtn').disabled = false; document.getElementById('cashoutBtn').disabled = true; revealAll(); if (isWin) { const multiplier = getMultiplier(clicks); const winAmount = bet * multiplier; try { const res = await fetch('http://localhost:5000/api/game/cashout', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userToken}` }, body: JSON.stringify({ gameCode, betAmount: bet, winAmount: winAmount, multiplier: multiplier }) }); const data = await res.json(); if (data.success) { balance = data.newBalance; updateBalanceUI(); } } catch (e) { console.error('Cashout error:', e); } showResult(true, winAmount, multiplier); document.getElementById('payout').textContent = `✅ WIN! +₹${winAmount.toFixed(2)}`; } else { showResult(false, 0, 0); document.getElementById('payout').textContent = `💥 BONE HIT! Lost ₹${bet.toFixed(2)}`; } updateStats(); }
+        function revealAll() { for (let i = 0; i < 25; i++) { const dish = document.getElementById(`dish-${i}`); if (!dish.classList.contains('chicken') && !dish.classList.contains('bone')) { if (traps.includes(i)) { dish.className = 'dish bone reveal'; dish.innerHTML = '🦴'; } else { dish.className = 'dish reveal'; dish.innerHTML = '🍗'; dish.style.opacity = '0.4'; } } dish.classList.add('disabled'); } }
+        function getMultiplier(c) { const n = 25; const b = bones; let p = 1; for (let i = 0; i < c; i++) { p *= (n - b - i) / (n - i); } return parseFloat((0.95 / p).toFixed(2)); }
+        function updateStats() { document.getElementById('statClicks').textContent = clicks; const mult = getMultiplier(clicks); document.getElementById('statMultiplier').textContent = mult + 'x'; document.getElementById('statProfit').textContent = '₹' + (bet * mult - bet).toFixed(2); }
+        function showResult(isWin, amount, multiplier) { const popup = document.getElementById('resultPopup'); const box = document.getElementById('resultBox'); const icon = document.getElementById('resultIcon'); const title = document.getElementById('resultTitle'); const amountEl = document.getElementById('resultAmount'); const closeBtn = document.getElementById('resultClose'); if (isWin) { box.classList.remove('lose-box'); icon.textContent = '🎉'; title.textContent = 'YOU WIN!'; title.style.color = 'var(--neon-green)'; amountEl.textContent = `+₹${amount.toFixed(2)}`; amountEl.style.color = 'var(--neon-green)'; closeBtn.classList.remove('lose-close'); showToast(`🎉 Won ₹${amount.toFixed(2)} at ${multiplier}x!`); } else { box.classList.add('lose-box'); icon.textContent = '🦴'; title.textContent = 'BONE HIT!'; title.style.color = 'var(--neon-red)'; amountEl.textContent = `-₹${bet.toFixed(2)}`; amountEl.style.color = 'var(--neon-red)'; closeBtn.classList.add('lose-close'); showToast(`💥 Hit a bone! Lost ₹${bet.toFixed(2)}`); } soundManager.play(isWin ? 'win' : 'lose'); popup.classList.add('show'); }
+        window.closePopup = () => { soundManager.play('click'); document.getElementById('resultPopup').classList.remove('show'); };
+        function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+        buildGrid(); if (userToken) { fetchBalance(); setInterval(fetchBalance, 5000); }
+    </script>
+</body>
+</html>

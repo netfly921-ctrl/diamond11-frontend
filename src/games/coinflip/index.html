@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Coin Flip - Diamond 11</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    
+    <script>
+    // SOUND SYSTEM
+    const soundManager = {
+        win: null, lose: null, click: null, enabled: true,
+        init() {
+            this.enabled = localStorage.getItem('D11_SOUND') !== '0';
+            this.win = new Audio('win.mp3'); this.lose = new Audio('lose.mp3'); this.click = new Audio('click.mp3');
+            this.win.volume = 0.7; this.lose.volume = 0.6; this.click.volume = 0.4;
+            this.updateBtn();
+            document.addEventListener('click', () => { [this.win, this.lose, this.click].forEach(a => a.play().then(() => a.pause()).catch(()=>{})); }, { once: true });
+        },
+        updateBtn() { const b = document.getElementById('soundBtn'); if (b) b.innerHTML = this.enabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>'; },
+        play(t) { if (!this.enabled) return; try { this[t].currentTime = 0; this[t].play().catch(()=>{}); } catch(e){} }
+    };
+    window.toggleSound = () => { soundManager.enabled = !soundManager.enabled; localStorage.setItem('D11_SOUND', soundManager.enabled?'1':'0'); soundManager.updateBtn(); soundManager.play('click'); };
+    addEventListener('load', () => soundManager.init());
+    </script>
+
+    <style>
+        :root { --bg: #0a0a0f; --glass: rgba(255,255,255,0.05); --border: rgba(255,255,255,0.1); --gold: #ffd700; --silver: #c0c0c0; --green: #00ff88; --red: #ff2a2a; --orange: #fb923c; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 15px; padding-top: 65px; }
+        #topBar { position: fixed; top: 0; left: 0; right: 0; height: 50px; background: #14141f; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; padding: 0 18px; z-index: 999; font-weight: 700; }
+        .bal-top { color: var(--gold); font-size: 1.2rem; }
+        .box { width: 100%; max-width: 420px; background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; padding: 20px; }
+        .poster { height: 110px; border-radius: 16px; background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(0,0,0,0.6)), url('coinflip-poster.jpg') center/cover; margin-bottom: 15px; position: relative; border: 1px solid var(--border); }
+        .sound-btn { position: absolute; top: 10px; right: 10px; width: 38px; height: 38px; background: rgba(0,0,0,0.6); border: 1px solid var(--border); border-radius: 10px; display: grid; place-items: center; cursor: pointer; font-size: 1.1rem; }
+        .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .logo { font-size: 1.3rem; font-weight: 900; background: linear-gradient(90deg, var(--gold), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .bal { color: var(--green); font-weight: 700; font-size: 1.1rem; }
+        .coin-area { height: 220px; display: flex; justify-content: center; align-items: center; perspective: 1000px; margin-bottom: 15px; }
+        .coin { width: 160px; height: 160px; position: relative; transform-style: preserve-3d; transition: transform 2.5s cubic-bezier(0.2, 0.8, 0.3, 1); }
+        .coin.flipping { animation: float 0.5s ease-in-out infinite alternate; }
+        @keyframes float { 0% { transform: translateY(0); } 100% { transform: translateY(-20px); } }
+        .face { position: absolute; width: 100%; height: 100%; border-radius: 50%; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; border: 6px solid var(--gold); box-shadow: inset 0 0 40px rgba(0,0,0,0.5), 0 0 40px rgba(255,215,0,0.4), 0 10px 30px rgba(0,0,0,0.8); }
+        .face.heads { background: radial-gradient(circle at 30% 30%, #ffeb99, #ffd700 40%, #b8860b 100%); color: #5c4100; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .face.tails { background: radial-gradient(circle at 30% 30%, #e8e8e8, #c0c0c0 40%, #707070 100%); color: #222; transform: rotateY(180deg); border-color: var(--silver); box-shadow: inset 0 0 40px rgba(0,0,0,0.5), 0 0 40px rgba(192,192,192,0.4), 0 10px 30px rgba(0,0,0,0.8); }
+        .face .icon { font-size: 3.5rem; margin-bottom: 5px; } .face .text { font-size: 1.1rem; letter-spacing: 2px; }
+        .result-text { text-align: center; font-size: 1.4rem; font-weight: 800; min-height: 35px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .result-text.win { color: var(--green); text-shadow: 0 0 20px var(--green); } .result-text.lose { color: var(--red); text-shadow: 0 0 20px var(--red); } .result-text.flip { color: var(--gold); animation: pulse 0.5s infinite; } @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+        .history { display: flex; gap: 6px; justify-content: center; margin-bottom: 15px; min-height: 28px; }
+        .h-item { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 0.7rem; font-weight: 800; border: 2px solid; }
+        .h-heads { background: rgba(255,215,0,0.2); border-color: var(--gold); color: var(--gold); } .h-tails { background: rgba(192,192,192,0.2); border-color: var(--silver); color: var(--silver); }
+        .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .choice-btn { padding: 16px; border: 2px solid var(--border); border-radius: 14px; background: rgba(0,0,0,0.3); color: white; font-weight: 800; font-size: 1rem; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+        .choice-btn:hover:not(:disabled) { transform: translateY(-2px); background: rgba(255,255,255,0.05); }
+        .choice-btn.active.heads { border-color: var(--gold); background: rgba(255,215,0,0.15); color: var(--gold); box-shadow: 0 0 20px rgba(255,215,0,0.3); }
+        .choice-btn.active.tails { border-color: var(--silver); background: rgba(192,192,192,0.15); color: var(--silver); box-shadow: 0 0 20px rgba(192,192,192,0.3); }
+        .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .bet-box { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 12px; }
+        .bet-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .bet-row label { font-size: 0.75rem; color: #8b9bb4; min-width: 70px; }
+        .bet-row input { flex: 1; padding: 10px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; color: white; font-weight: 700; font-size: 1rem; outline: none; }
+        .bet-row input:focus { border-color: var(--gold); }
+        .quick { display: flex; gap: 5px; } .quick button { flex: 1; padding: 6px; background: rgba(255,255,255,0.06); border: none; border-radius: 6px; color: #aaa; font-size: 0.8rem; cursor: pointer; } .quick button:hover { background: rgba(255,255,255,0.12); color: white; }
+        .flip-btn { width: 100%; padding: 16px; border: none; border-radius: 14px; background: linear-gradient(135deg, var(--gold), #ffaa00); color: #000; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; cursor: pointer; box-shadow: 0 5px 25px rgba(255,215,0,0.3); transition: 0.2s; letter-spacing: 1px; }
+        .flip-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,215,0,0.5); } .flip-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; text-align: center; font-size: 0.8rem; }
+        .stat { background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; } .stat .v { font-weight: 800; color: var(--gold); font-size: 1rem; } .stat .l { color: #8b9bb4; font-size: 0.65rem; margin-top: 2px; }
+        .toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-120px); background: rgba(0,0,0,0.95); border: 1px solid var(--gold); padding: 12px 24px; border-radius: 12px; font-weight: 600; z-index: 1000; transition: 0.3s; } .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+    <div id="topBar"><div><i class="fa-solid fa-coins"></i> COIN FLIP</div><div class="bal-top">₹<span id="topBal">0.00</span></div></div>
+    <div class="toast" id="toast"></div>
+    <div class="box">
+        <div class="poster"><button class="sound-btn" id="soundBtn" onclick="toggleSound()"><i class="fa-solid fa-volume-high"></i></button></div>
+        <div class="head"><div class="logo">🪙 FLIP COIN</div><div class="bal">₹<span id="balance">0.00</span></div></div>
+        <div class="coin-area"><div class="coin" id="coin"><div class="face heads"><div class="icon">👑</div><div class="text">HEADS</div></div><div class="face tails"><div class="icon">⚡</div><div class="text">TAILS</div></div></div></div>
+        <div class="result-text" id="resultText">Choose Heads or Tails</div>
+        <div class="history" id="history"></div>
+        <div class="choices"><button class="choice-btn" id="btnHeads" onclick="selectChoice('heads')">👑 HEADS</button><button class="choice-btn" id="btnTails" onclick="selectChoice('tails')">⚡ TAILS</button></div>
+        <div class="bet-box"><div class="bet-row"><label>BET AMOUNT</label><input type="number" id="betInput" value="10" min="10"></div><div class="quick"><button onclick="quickBet(10)">10</button><button onclick="quickBet(50)">50</button><button onclick="quickBet(100)">100</button><button onclick="quickBet(500)">500</button><button onclick="quickBet('half')">½</button><button onclick="quickBet('double')">2×</button></div></div>
+        <button class="flip-btn" id="flipBtn" onclick="doFlip()">FLIP COIN</button>
+        <div class="stats"><div class="stat"><div class="v" id="statWin">0</div><div class="l">WINS</div></div><div class="stat"><div class="v" id="statLoss">0</div><div class="l">LOSSES</div></div><div class="stat"><div class="v" id="statProfit">₹0</div><div class="l">PROFIT</div></div></div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(location.search); const token = params.get('token'); const API = 'http://localhost:5000/api';
+        let balance = 0, choice = null, flipping = false, wins = 0, losses = 0, profit = 0, history = [];
+        const coin = document.getElementById('coin'), resultText = document.getElementById('resultText'), flipBtn = document.getElementById('flipBtn');
+
+        async function getBalance() { if (!token) return; try { const r = await fetch(`${API}/wallet/balance`, { headers: { 'Authorization': `Bearer ${token}` } }); const d = await r.json(); if (d.success) { balance = d.data.balance || 0; document.getElementById('balance').textContent = balance.toFixed(2); document.getElementById('topBal').textContent = balance.toFixed(2); } } catch(e) {} }
+        window.selectChoice = (c) => { if (flipping) return; soundManager.play('click'); choice = c; document.getElementById('btnHeads').classList.toggle('active', c === 'heads'); document.getElementById('btnTails').classList.toggle('active', c === 'tails'); resultText.textContent = `You picked ${c.toUpperCase()}`; resultText.className = 'result-text'; };
+        window.quickBet = (v) => { soundManager.play('click'); const inp = document.getElementById('betInput'); if (v === 'half') inp.value = Math.max(10, Math.floor(+inp.value / 2)); else if (v === 'double') inp.value = Math.min(balance, Math.floor(+inp.value * 2)); else inp.value = v; };
+
+        window.doFlip = async () => {
+            if (flipping || !choice) return showToast(choice ? 'Wait...' : 'Pick Heads or Tails!');
+            const bet = parseFloat(document.getElementById('betInput').value) || 10;
+            if (bet < 10) return showToast('Min bet ₹10'); if (bet > balance) return showToast('Low balance!');
+            flipping = true; flipBtn.disabled = true; document.getElementById('btnHeads').disabled = true; document.getElementById('btnTails').disabled = true; soundManager.play('click');
+            try { const r = await fetch(`${API}/game/place-bet`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ gameCode: 'coinflip', betAmount: bet }) }); const d = await r.json(); if (!d.success) throw 0; balance = d.newBalance; getBalance(); } catch(e) { flipping = false; flipBtn.disabled = false; document.getElementById('btnHeads').disabled = false; document.getElementById('btnTails').disabled = false; return showToast('Bet failed!'); }
+            resultText.textContent = 'FLIPPING...'; resultText.className = 'result-text flip'; coin.classList.add('flipping');
+            
+            // ✅ 40% WIN / 60% LOSS
+            const willWin = Math.random() < 0.40;
+            const result = willWin ? choice : (choice === 'heads' ? 'tails' : 'heads');
+            const isWin = result === choice;
+            const spins = 5 + Math.floor(Math.random() * 4), finalRotation = result === 'heads' ? spins * 360 : spins * 360 + 180;
+            setTimeout(() => { coin.style.transform = `rotateY(${finalRotation}deg)`; }, 100);
+
+            setTimeout(async () => {
+                coin.classList.remove('flipping'); flipping = false; flipBtn.disabled = false; document.getElementById('btnHeads').disabled = false; document.getElementById('btnTails').disabled = false;
+                history.unshift({ result, win: isWin }); if (history.length > 12) history.pop(); updateHistory();
+                if (isWin) {
+                    const winAmount = bet * 1.95; profit += (winAmount - bet); wins++;
+                    resultText.textContent = `${result.toUpperCase()}! YOU WIN ₹${winAmount.toFixed(0)}`; resultText.className = 'result-text win'; soundManager.play('win'); showToast(`🎉 Won ₹${winAmount.toFixed(0)}!`);
+                    try { await fetch(`${API}/game/cashout`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ gameCode: 'coinflip', betAmount: bet, winAmount, multiplier: 1.95 }) }); getBalance(); } catch(e) {}
+                } else {
+                    profit -= bet; losses++;
+                    resultText.textContent = `${result.toUpperCase()}! YOU LOSE`; resultText.className = 'result-text lose'; soundManager.play('lose'); showToast(`💸 Lost ₹${bet}`);
+                }
+                updateStats();
+            }, 2600);
+        };
+
+        function updateHistory() { const h = document.getElementById('history'); h.innerHTML = ''; history.forEach(item => { const d = document.createElement('div'); d.className = `h-item h-${item.result}`; d.textContent = item.result === 'heads' ? 'H' : 'T'; d.style.opacity = item.win ? '1' : '0.5'; h.appendChild(d); }); }
+        function updateStats() { document.getElementById('statWin').textContent = wins; document.getElementById('statLoss').textContent = losses; document.getElementById('statProfit').textContent = (profit >= 0 ? '+' : '') + '₹' + profit.toFixed(0); }
+        function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+        getBalance(); setInterval(getBalance, 5000); selectChoice('heads');
+    </script>
+</body>
+</html>

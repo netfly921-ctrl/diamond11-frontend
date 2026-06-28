@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limbo Pro - Diamond 11</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        :root {
+            --bg-dark: #050510;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-green: #00ff88;
+            --neon-red: #ff2a2a;
+            --text-main: #ffffff;
+            --text-muted: #8b9bb4;
+            --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 243, 255, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 255, 0.1) 0%, transparent 40%);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Top Balance Bar */
+        #liveBalanceBar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 45px;
+            background: #111827;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 999999;
+            border-bottom: 2px solid #ffd966;
+        }
+
+        .balance-amount {
+            color: #ffd966;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* Glass Container */
+        .game-wrapper {
+            width: 100%;
+            max-width: 480px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            margin-top: 50px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .balance-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .balance-val {
+            font-weight: 700;
+            color: var(--neon-green);
+            font-size: 0.95rem;
+        }
+
+        /* Display Area */
+        .display-area {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 18px;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            border: 1px solid var(--glass-border);
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .multiplier-display {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .multiplier-display.running {
+            color: var(--neon-blue);
+            text-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+        }
+
+        .multiplier-display.win {
+            color: var(--neon-green);
+            text-shadow: 0 0 40px rgba(0, 255, 136, 0.6);
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .multiplier-display.lose {
+            color: var(--neon-red);
+            text-shadow: 0 0 40px rgba(255, 42, 42, 0.6);
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .status-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            height: 20px;
+        }
+
+        .status-text.win { color: var(--neon-green); }
+        .status-text.lose { color: var(--neon-red); }
+
+        /* Controls Grid */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .custom-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px 12px 12px 40px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .custom-input:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            font-size: 1rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .quick-btns {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .q-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            padding: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .q-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .stat-val.profit { color: var(--neon-green); }
+        .stat-val.chance { color: var(--neon-blue); }
+
+        /* Action Buttons */
+        .action-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .main-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-bet {
+            background: linear-gradient(135deg, var(--neon-blue), #0088ff);
+            color: #000;
+            box-shadow: 0 5px 20px rgba(0, 243, 255, 0.3);
+        }
+
+        .btn-bet:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 243, 255, 0.4);
+        }
+
+        .btn-bet:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .btn-auto {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 22px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--neon-green);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(18px);
+        }
+
+        /* History */
+        .history-bar {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-top: 10px;
+            scrollbar-width: none;
+        }
+
+        .history-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hist-pill {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            white-space: nowrap;
+            border: 1px solid transparent;
+        }
+
+        .hist-pill.win {
+            color: var(--neon-green);
+            border-color: rgba(0, 255, 136, 0.3);
+        }
+
+        .hist-pill.lose {
+            color: var(--neon-red);
+            border-color: rgba(255, 42, 42, 0.3);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--neon-red);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .game-wrapper { padding: 15px; }
+            .multiplier-display { font-size: 2.5rem; }
+            .controls-grid { gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- ✅ LIVE BALANCE BAR -->
+    <div id="liveBalanceBar">
+        <div><i class="fa-solid fa-wallet"></i> Balance</div>
+        <div class="balance-amount">₹<span id="topBalanceText">Loading...</span></div>
+    </div>
+
+    <div class="toast" id="toast">Error Message</div>
+
+    <div class="game-wrapper">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">⚡ LIMBO PRO</div>
+            <div class="balance-box">
+                <span>💰</span>
+                <span class="balance-val" id="balance">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Display -->
+        <div class="display-area">
+            <div class="multiplier-display" id="multiplier">1.00x</div>
+            <div class="status-text" id="statusText">Set target & bet to start</div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-grid">
+            <div class="input-group">
+                <div class="input-label">Bet Amount</div>
+                <div class="input-wrapper">
+                    <span class="input-icon">🪙</span>
+                    <input type="number" class="custom-input" id="betInput" value="10" min="0.1">
+                </div>
+                <div class="quick-btns">
+                    <button class="q-btn" onclick="adjustBet(0.5)">½</button>
+                    <button class="q-btn" onclick="adjustBet(2)">2×</button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">Target Multiplier</div>
+                <div class="input-wrapper">
+                    <span class="input-icon">🎯</span>
+                    <input type="number" class="custom-input" id="targetInput" value="2.00" step="0.01" min="1.01">
+                </div>
+                <div class="quick-btns">
+                    <button class="q-btn" onclick="setTarget(1.5)">1.5x</button>
+                    <button class="q-btn" onclick="setTarget(5)">5x</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-val profit" id="profitVal">+20.00</div>
+                <div class="stat-label">Profit on Win</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val chance" id="chanceVal">49.50%</div>
+                <div class="stat-label">Win Chance</div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="action-area">
+            <button class="main-btn btn-bet" id="betBtn" onclick="playGame()">
+                🚀 BET
+            </button>
+            
+            <button class="main-btn btn-auto" onclick="toggleAuto()">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="autoToggle">
+                    <span class="slider"></span>
+                </label>
+                <span>Auto Bet</span>
+            </button>
+        </div>
+
+        <!-- History -->
+        <div class="history-bar" id="historyBar">
+            <!-- History items injected via JS -->
+        </div>
+    </div>
+
+    <script>
+        // === BACKEND CONFIG ===
+        const urlParams = new URLSearchParams(window.location.search);
+        const userToken = urlParams.get('token');
+        const userUid = urlParams.get('uid') || '';
+        const gameCode = 'limbo';
+        let balance = 0;
+
+        // Game State
+        const state = {
+            balance: 0,
+            bet: 10,
+            target: 2.00,
+            isPlaying: false,
+            autoMode: false,
+            history: []
+        };
+
+        // DOM Elements
+        const els = {
+            balance: document.getElementById('balance'),
+            topBalance: document.getElementById('topBalanceText'),
+            multiplier: document.getElementById('multiplier'),
+            status: document.getElementById('statusText'),
+            betInput: document.getElementById('betInput'),
+            targetInput: document.getElementById('targetInput'),
+            profitVal: document.getElementById('profitVal'),
+            chanceVal: document.getElementById('chanceVal'),
+            betBtn: document.getElementById('betBtn'),
+            historyBar: document.getElementById('historyBar'),
+            toast: document.getElementById('toast'),
+            autoToggle: document.getElementById('autoToggle')
+        };
+
+        // === FETCH BALANCE FROM BACKEND ===
+        async function fetchBalance() {
+            if (!userToken) {
+                els.topBalance.textContent = 'Login Required';
+                els.balance.textContent = 'Login Required';
+                return;
+            }
+            try {
+                const res = await fetch('http://localhost:5000/api/wallet/balance', {
+                    headers: { 'Authorization': `Bearer ${userToken}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    balance = data.data.balance || 0;
+                    updateUI();
+                } else {
+                    els.topBalance.textContent = 'Error';
+                }
+            } catch (e) {
+                console.error('Balance error:', e);
+                els.topBalance.textContent = 'Offline';
+            }
+        }
+
+        function updateUI() {
+            els.balance.textContent = balance.toFixed(2);
+            els.topBalance.textContent = balance.toFixed(2);
+            els.betInput.value = state.bet;
+            els.targetInput.value = state.target.toFixed(2);
+            updateCalculations();
+            
+            // Send to parent window for sync
+            parent.postMessage({ type: 'UPDATE_BALANCE', payload: { newBalance: balance } }, '*');
+        }
+
+        // === LISTENERS ===
+        function setupListeners() {
+            els.betInput.addEventListener('input', (e) => {
+                state.bet = parseFloat(e.target.value) || 0;
+                updateCalculations();
+            });
+
+            els.targetInput.addEventListener('input', (e) => {
+                let val = parseFloat(e.target.value);
+                if (val < 1.01) val = 1.01;
+                state.target = val;
+                els.targetInput.value = val.toFixed(2);
+                updateCalculations();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && !state.isPlaying) playGame();
+            });
+        }
+
+        // === CALCULATIONS ===
+        function updateCalculations() {
+            const chance = Math.min(99 / state.target, 99).toFixed(2);
+            const profit = (state.bet * state.target - state.bet).toFixed(2);
+
+            els.chanceVal.textContent = `${chance}%`;
+            els.profitVal.textContent = `+${profit}`;
+            
+            if (chance < 20) els.chanceVal.style.color = 'var(--neon-red)';
+            else if (chance < 50) els.chanceVal.style.color = 'var(--neon-blue)';
+            else els.chanceVal.style.color = 'var(--neon-green)';
+        }
+
+        // === HELPER FUNCTIONS ===
+        window.adjustBet = (mult) => {
+            if (state.isPlaying) return;
+            state.bet = Math.max(0.1, state.bet * mult);
+            els.betInput.value = state.bet.toFixed(2);
+            updateCalculations();
+        };
+
+        window.setTarget = (val) => {
+            if (state.isPlaying) return;
+            state.target = val;
+            els.targetInput.value = val.toFixed(2);
+            updateCalculations();
+        };
+
+        window.toggleAuto = () => {
+            state.autoMode = els.autoToggle.checked;
+        };
+
+        // === PLAY GAME WITH BACKEND ===
+        window.playGame = async () => {
+            if (state.isPlaying) return;
+
+            if (state.bet <= 0) return showToast("Invalid bet amount!");
+            if (state.bet > balance) return showToast("Insufficient balance!");
+            if (state.target < 1.01) return showToast("Target must be > 1.01");
+
+            state.isPlaying = true;
+            balance -= state.bet;
+            updateUI();
+            
+            els.betBtn.disabled = true;
+            els.betBtn.innerHTML = '🚀 ROLLING...';
+            els.multiplier.className = 'multiplier-display running';
+            els.multiplier.textContent = '1.00x';
+            els.status.textContent = 'Rolling...';
+            els.status.className = 'status-text';
+
+            try {
+                // === SEND TO BACKEND FOR RESULT ===
+                const res = await fetch('http://localhost:5000/api/game/place-bet', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${userToken}`
+                    },
+                    body: JSON.stringify({ gameCode, betAmount: state.bet })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    // Place bet successful, now get result
+                    // In this case we'll simulate briefly then get cashout
+                    animateMultiplierLogic(state.bet, state.target);
+                } else {
+                    throw new Error(data.message || 'Bet failed');
+                }
+            } catch (err) {
+                console.error('Game error:', err);
+                showToast(err.message || "Network Error");
+                state.isPlaying = false;
+                els.betBtn.disabled = false;
+                els.betBtn.innerHTML = '🚀 BET';
+                balance += state.bet;
+                updateUI();
+            }
+        };
+
+        function animateMultiplierLogic(bet, target) {
+            // Simulate animation
+            let current = 1.00;
+            const duration = 800;
+            const startTime = performance.now();
+
+            // Determine result (backend would send this, but we're using admin-controlled logic)
+            // For demo: We'll calculate based on target
+            const rand = Math.random();
+            const crashPoint = 1 / (1 - rand * 0.99);
+            const finalResult = Math.min(Math.max(crashPoint, 1.00), 1000.00);
+            const isWin = finalResult >= target;
+
+            function frame(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = 1 - Math.pow(1 - progress, 3);
+                current = 1.00 + (finalResult - 1.00) * ease;
+
+                els.multiplier.textContent = current.toFixed(2) + 'x';
+
+                if (progress < 1) {
+                    requestAnimationFrame(frame);
+                } else {
+                    finalizeGame(finalResult, isWin);
+                }
+            }
+            requestAnimationFrame(frame);
+        }
+
+        async function finalizeGame(result, isWin) {
+            state.isPlaying = false;
+            const resultFixed = result.toFixed(2);
+            els.multiplier.textContent = resultFixed + 'x';
+            
+            let winAmount = 0;
+
+            if (isWin) {
+                winAmount = state.bet * state.target;
+                
+                // === CASHOUT TO BACKEND ===
+                try {
+                    const res = await fetch('http://localhost:5000/api/game/cashout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${userToken}`
+                        },
+                        body: JSON.stringify({
+                            gameCode,
+                            betAmount: state.bet,
+                            winAmount,
+                            multiplier: (winAmount / state.bet).toFixed(2)
+                        })
+                    });
+                    
+                    const data = await res.json();
+                    if (data.success) {
+                        balance = data.newBalance;
+                    }
+                } catch (e) {
+                    console.error('Cashout error:', e);
+                }
+                
+                els.multiplier.classList.remove('running');
+                els.multiplier.classList.add('win');
+                els.status.textContent = `🎉 WIN! +${winAmount.toFixed(2)}`;
+                els.status.classList.add('win');
+                showToast(`🎉 Won ₹${winAmount.toFixed(2)}!`);
+            } else {
+                els.multiplier.classList.remove('running');
+                els.multiplier.classList.add('lose');
+                els.status.textContent = `💥 CRASHED AT ${resultFixed}x`;
+                els.status.classList.add('lose');
+                showToast(`❌ Lost ₹${state.bet}`);
+            }
+
+            addToHistory(resultFixed, isWin);
+            updateUI();
+            els.betBtn.disabled = false;
+            els.betBtn.innerHTML = '🚀 BET';
+
+            // Auto Bet Logic
+            if (state.autoMode && state.balance >= state.bet) {
+                setTimeout(() => playGame(), 1000);
+            }
+        }
+
+        function addToHistory(result, isWin) {
+            state.history.unshift({ result, isWin });
+            if (state.history.length > 15) state.history.pop();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            els.historyBar.innerHTML = state.history.map(h => 
+                `<div class="hist-pill ${h.isWin ? 'win' : 'lose'}">${h.result}x</div>`
+            ).join('');
+        }
+
+        function showToast(msg) {
+            els.toast.textContent = msg;
+            els.toast.classList.add('show');
+            setTimeout(() => els.toast.classList.remove('show'), 3000);
+        }
+
+        // === INITIALIZE ===
+        function init() {
+            if (userToken) {
+                fetchBalance();
+                setInterval(fetchBalance, 5000);
+            }
+            setupListeners();
+            updateUI();
+        }
+
+        init();
+    </script>
+</body>
+</html>

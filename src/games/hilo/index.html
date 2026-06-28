@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hi-Lo - Diamond 11</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    
+    <script>
+    // ✅ SOUND SYSTEM
+    const soundManager = {
+        win: null, lose: null, click: null, enabled: true,
+        init() {
+            this.enabled = localStorage.getItem('D11_SOUND') !== '0';
+            this.win = new Audio('win.mp3'); this.lose = new Audio('lose.mp3'); this.click = new Audio('click.mp3');
+            this.win.volume = 0.7; this.lose.volume = 0.6; this.click.volume = 0.4;
+            this.updateBtn();
+            document.addEventListener('click', () => { [this.win, this.lose, this.click].forEach(a => a.play().then(() => a.pause()).catch(()=>{})); }, { once: true });
+        },
+        updateBtn() { const b = document.getElementById('soundBtn'); if (b) b.innerHTML = this.enabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>'; },
+        play(t) { if (!this.enabled) return; try { this[t].currentTime = 0; this[t].play().catch(()=>{}); } catch(e){} }
+    };
+    window.toggleSound = () => { soundManager.enabled = !soundManager.enabled; localStorage.setItem('D11_SOUND', soundManager.enabled?'1':'0'); soundManager.updateBtn(); soundManager.play('click'); };
+    addEventListener('load', () => soundManager.init());
+    </script>
+
+    <style>
+        :root { --bg: #0a0a0f; --glass: rgba(255,255,255,0.05); --border: rgba(255,255,255,0.1); --gold: #ffd700; --green: #00ff88; --red: #ff2a2a; --orange: #fb923c; --blue: #0088ff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 15px; padding-top: 65px; }
+        
+        /* Top Bar */
+        #topBar { position: fixed; top: 0; left: 0; right: 0; height: 50px; background: #14141f; border-bottom: 2px solid var(--orange); display: flex; justify-content: space-between; align-items: center; padding: 0 18px; z-index: 999; font-weight: 700; }
+        .bal-top { color: var(--gold); font-size: 1.1rem; }
+        
+        /* Main Box */
+        .box { width: 100%; max-width: 420px; background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; padding: 20px; }
+        
+        /* Poster */
+        .poster { height: 100px; border-radius: 16px; background: linear-gradient(135deg, rgba(0,136,255,0.2), rgba(0,0,0,0.6)), url('hilo-poster.jpg') center/cover; margin-bottom: 15px; position: relative; border: 1px solid var(--border); }
+        .sound-btn { position: absolute; top: 10px; right: 10px; width: 38px; height: 38px; background: rgba(0,0,0,0.6); border: 1px solid var(--border); border-radius: 10px; display: grid; place-items: center; cursor: pointer; font-size: 1.1rem; }
+        
+        /* Header */
+        .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .logo { font-size: 1.3rem; font-weight: 900; background: linear-gradient(90deg, var(--blue), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .bal { color: var(--green); font-weight: 700; font-size: 1.1rem; }
+        
+        /* Card Area */
+        .card-area { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; min-height: 160px; }
+        .card { width: 100px; height: 140px; background: white; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 10px; font-weight: 800; font-size: 1.5rem; border: 4px solid var(--gold); position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        .card.hidden { background: #333; border-color: #555; color: transparent; }
+        .card .suit-top, .card .suit-bottom { font-size: 0.8rem; }
+        .card .value { font-size: 2.5rem; line-height: 1; }
+        .card.red-suit { color: var(--red); }
+        .card.blue-suit { color: var(--blue); }
+        
+        /* Choices */
+        .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .choice-btn { padding: 14px; border: 2px solid var(--border); border-radius: 12px; background: rgba(0,0,0,0.3); color: white; font-weight: 800; font-size: 0.95rem; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .choice-btn:hover:not(:disabled) { transform: translateY(-2px); background: rgba(255,255,255,0.05); }
+        .choice-btn.active { border-color: var(--orange); background: rgba(251,146,60,0.15); color: var(--orange); box-shadow: 0 0 15px rgba(251,146,60,0.3); }
+        .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .payout { font-size: 0.7rem; opacity: 0.8; margin-top: 2px; }
+        
+        /* Bet Controls */
+        .bet-box { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 15px; }
+        .bet-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .bet-row label { font-size: 0.75rem; color: #8b9bb4; min-width: 70px; }
+        .bet-row input { flex: 1; padding: 10px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; color: white; font-weight: 700; outline: none; }
+        .bet-row input:focus { border-color: var(--gold); }
+        .quick { display: flex; gap: 5px; }
+        .quick button { flex: 1; padding: 6px; background: rgba(255,255,255,0.06); border: none; border-radius: 6px; color: #aaa; font-size: 0.8rem; cursor: pointer; }
+        
+        /* Play Button */
+        .play-btn { width: 100%; padding: 16px; border: none; border-radius: 14px; background: linear-gradient(135deg, var(--green), #00aa55); color: black; font-weight: 900; font-size: 1.1rem; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 25px rgba(0,255,136,0.3); transition: 0.2s; }
+        .play-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 35px rgba(0,255,136,0.5); }
+        .play-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        /* Result */
+        .result-text { text-align: center; font-size: 1.2rem; font-weight: 800; min-height: 30px; margin-top: 10px; text-transform: uppercase; }
+        .result-text.win { color: var(--green); text-shadow: 0 0 20px var(--green); }
+        .result-text.lose { color: var(--red); text-shadow: 0 0 20px var(--red); }
+        .toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-120px); background: rgba(0,0,0,0.95); border: 1px solid var(--orange); padding: 12px 24px; border-radius: 12px; font-weight: 600; z-index: 1000; transition: 0.3s; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div id="topBar"><div><i class="fa-solid fa-cards"></i> HI-LO</div><div class="bal-top">₹<span id="topBal">0.00</span></div></div>
+    <div class="toast" id="toast"></div>
+
+    <div class="box">
+        <!-- Poster -->
+        <div class="poster"><button class="sound-btn" id="soundBtn" onclick="toggleSound()"><i class="fa-solid fa-volume-high"></i></button></div>
+        
+        <!-- Header -->
+        <div class="head"><div class="logo">⬆️ HI-LO ⬇️</div><div class="bal">₹<span id="balance">0.00</span></div></div>
+        
+        <!-- Card Area -->
+        <div class="card-area">
+            <div class="card" id="currentCard"></div>
+            <div class="card hidden" id="nextCard">?</div>
+        </div>
+
+        <!-- Result Text -->
+        <div class="result-text" id="resultText">Pick Higher, Lower or Same</div>
+        
+        <!-- Choices -->
+        <div class="choices">
+            <button class="choice-btn" id="btnHigher" onclick="selectChoice('higher')">
+                HIGHER <div class="payout">1.95×</div>
+            </button>
+            <button class="choice-btn" id="btnSame" onclick="selectChoice('same')">
+                SAME <div class="payout">9×</div>
+            </button>
+            <button class="choice-btn" id="btnLower" onclick="selectChoice('lower')">
+                LOWER <div class="payout">1.95×</div>
+            </button>
+        </div>
+        
+        <!-- Bet Amount -->
+        <div class="bet-box">
+            <div class="bet-row">
+                <label>BET AMOUNT</label>
+                <input type="number" id="betInput" value="10" min="10">
+            </div>
+            <div class="quick">
+                <button onclick="quickBet(10)">10</button>
+                <button onclick="quickBet(50)">50</button>
+                <button onclick="quickBet(100)">100</button>
+                <button onclick="quickBet(500)">500</button>
+                <button onclick="quickBet('half')">½</button>
+                <button onclick="quickBet('double')">2×</button>
+            </div>
+        </div>
+        
+        <!-- Play Button -->
+        <button class="play-btn" id="playBtn" onclick="playRound()">PLAY</button>
+    </div>
+
+    <script>
+        // ===== CONFIG =====
+        const params = new URLSearchParams(location.search);
+        const token = params.get('token');
+        const API = 'http://localhost:5000/api';
+        const CARDS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        const SUITS = ['♥️', '♦️', '♠️', '♣️']; // Red suits: ♥️♦️, Blue suits: ♠️♣️
+        const CARD_VALUES = { 'A': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13 };
+
+        // ===== STATE =====
+        let balance = 0;
+        let playing = false;
+        let currentCard = null; // { value: 'A', suit: '♥️' }
+        let selectedChoice = null; // 'higher', 'lower', 'same'
+
+        const currentCardEl = document.getElementById('currentCard');
+        const nextCardEl = document.getElementById('nextCard');
+        const resultTextEl = document.getElementById('resultText');
+        const playBtn = document.getElementById('playBtn');
+
+        // ===== WALLET =====
+        async function getBalance() {
+            if (!token) return;
+            try {
+                const r = await fetch(`${API}/wallet/balance`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const d = await r.json();
+                if (d.success) {
+                    balance = d.data.balance || 0;
+                    document.getElementById('balance').textContent = balance.toFixed(2);
+                    document.getElementById('topBal').textContent = balance.toFixed(2);
+                }
+            } catch(e) { console.log('balance err'); }
+        }
+
+        // ===== CARD DISPLAY =====
+        function displayCard(cardEl, cardData, hide = false) {
+            if (hide) {
+                cardEl.className = 'card hidden';
+                cardEl.innerHTML = '?';
+            } else {
+                const isRed = cardData.suit === '♥️' || cardData.suit === '♦️';
+                cardEl.className = `card ${isRed ? 'red-suit' : 'blue-suit'}`;
+                cardEl.innerHTML = `
+                    <div class="suit-top">${cardData.suit}</div>
+                    <div class="value">${cardData.value}</div>
+                    <div class="suit-bottom">${cardData.suit}</div>
+                `;
+            }
+        }
+
+        function getRandomCard() {
+            const val = CARDS[Math.floor(Math.random() * CARDS.length)];
+            const suit = SUITS[Math.floor(Math.random() * SUITS.length)];
+            return { value: val, suit: suit };
+        }
+
+        // ===== CHOICE =====
+        window.selectChoice = (c) => {
+            if (playing) return;
+            soundManager.play('click');
+            selectedChoice = c;
+            document.getElementById('btnHigher').classList.remove('active');
+            document.getElementById('btnLower').classList.remove('active');
+            document.getElementById('btnSame').classList.remove('active');
+            document.getElementById(`btn${c.charAt(0).toUpperCase() + c.slice(1)}`).classList.add('active');
+            resultTextEl.textContent = `You picked ${c.toUpperCase()}`;
+            resultTextEl.className = 'result-text';
+        };
+
+        // ===== QUICK BET =====
+        window.quickBet = (v) => {
+            soundManager.play('click');
+            const inp = document.getElementById('betInput');
+            if (v === 'half') inp.value = Math.max(10, Math.floor(+inp.value / 2));
+            else if (v === 'double') inp.value = Math.min(balance, Math.floor(+inp.value * 2));
+            else inp.value = v;
+        };
+
+        // ===== GAME ROUND =====
+        window.playRound = async () => {
+            if (playing || !selectedChoice) return showToast(selectedChoice ? 'Wait for round to finish!' : 'Select Higher, Lower or Same!');
+            
+            const bet = parseFloat(document.getElementById('betInput').value) || 10;
+            if (bet < 10) return showToast('Min bet ₹10');
+            if (bet > balance) return showToast('Insufficient balance!');
+
+            playing = true;
+            playBtn.disabled = true;
+            document.querySelectorAll('.choice-btn').forEach(btn => btn.disabled = true);
+            soundManager.play('click');
+            resultTextEl.textContent = 'Playing...';
+            resultTextEl.className = 'result-text';
+            displayCard(nextCardEl, null, true); // Hide next card
+
+            // 1. Deduct bet from backend
+            try {
+                const r = await fetch(`${API}/game/place-bet`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ gameCode: 'hilo', betAmount: bet })
+                });
+                const d = await r.json();
+                if (!d.success) throw new Error(d.message);
+                balance = d.newBalance;
+                getBalance();
+            } catch(e) {
+                playing = false;
+                playBtn.disabled = false;
+                document.querySelectorAll('.choice-btn').forEach(btn => btn.disabled = false);
+                return showToast('Bet failed!');
+            }
+
+            // ✅ 40% WIN / 60% LOSS LOGIC
+            const willWin = Math.random() < 0.40; // 40% chance to win
+            let nextCardData = {};
+            let isWinner = false;
+            
+            const currentVal = CARD_VALUES[currentCard.value];
+
+            // Determine the next card based on win/loss strategy
+            if (willWin) {
+                // Force a win
+                if (selectedChoice === 'higher') {
+                    // Current is K, cannot be higher -> force loss
+                    if (currentVal === 13) { isWinner = false; } 
+                    else { nextCardData = getRandomCard(); while (CARD_VALUES[nextCardData.value] <= currentVal) nextCardData = getRandomCard(); isWinner = true; }
+                } else if (selectedChoice === 'lower') {
+                    // Current is A, cannot be lower -> force loss
+                    if (currentVal === 1) { isWinner = false; } 
+                    else { nextCardData = getRandomCard(); while (CARD_VALUES[nextCardData.value] >= currentVal) nextCardData = getRandomCard(); isWinner = true; }
+                } else if (selectedChoice === 'same') {
+                    nextCardData = getRandomCard(); while (CARD_VALUES[nextCardData.value] !== currentVal) nextCardData = getRandomCard(); isWinner = true;
+                }
+            } else {
+                // Force a loss
+                if (selectedChoice === 'higher') {
+                    nextCardData = getRandomCard(); while (CARD_VALUES[nextCardData.value] > currentVal) nextCardData = getRandomCard(); isWinner = false;
+                } else if (selectedChoice === 'lower') {
+                    nextCardData = getRandomCard(); while (CARD_VALUES[nextCardData.value] < currentVal) nextCardData = getRandomCard(); isWinner = false;
+                } else if (selectedChoice === 'same') {
+                    nextCardData = getRandomCard(); while (CARD_VALUES[nextCardData.value] === currentVal) nextCardData = getRandomCard(); isWinner = false;
+                }
+            }
+
+            // Small delay for suspense
+            setTimeout(async () => {
+                displayCard(nextCardEl, nextCardData); // Show next card
+
+                // Determine actual outcome
+                if (isWinner) {
+                    const multiplier = selectedChoice === 'same' ? 9 : 1.95;
+                    const winAmount = bet * multiplier;
+                    
+                    resultTextEl.textContent = `YOU WIN! +₹${winAmount.toFixed(0)}`;
+                    resultTextEl.className = 'result-text win';
+                    soundManager.play('win');
+                    showToast(`🎉 Won ₹${winAmount.toFixed(0)}!`);
+
+                    // Credit win to backend
+                    try {
+                        await fetch(`${API}/game/cashout`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                            body: JSON.stringify({ gameCode: 'hilo', betAmount: bet, winAmount, multiplier })
+                        });
+                        getBalance();
+                    } catch(e) {}
+                } else {
+                    // Loss
+                    resultTextEl.textContent = `YOU LOSE! -₹${bet.toFixed(0)}`;
+                    resultTextEl.className = 'result-text lose';
+                    soundManager.play('lose');
+                    showToast(`💸 Lost ₹${bet}`);
+                }
+                
+                // Reset for next round
+                playing = false;
+                playBtn.disabled = false;
+                document.querySelectorAll('.choice-btn').forEach(btn => btn.disabled = false);
+                currentCard = nextCardData; // Next card becomes current for new round
+                setTimeout(() => {
+                    displayCard(currentCardEl, currentCard);
+                    displayCard(nextCardEl, null, true);
+                    selectedChoice = null;
+                    document.getElementById('btnHigher').classList.remove('active');
+                    document.getElementById('btnLower').classList.remove('active');
+                    document.getElementById('btnSame').classList.remove('active');
+                    resultTextEl.textContent = 'Pick Higher, Lower or Same';
+                }, 2000); // Small delay before next round starts
+            }, 1500); // Card reveal delay
+        };
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        // Init Game
+        function initGame() {
+            currentCard = getRandomCard();
+            displayCard(currentCardEl, currentCard);
+            displayCard(nextCardEl, null, true); // Hidden card
+            selectChoice('higher'); // Default selection
+            getBalance();
+            setInterval(getBalance, 5000);
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
