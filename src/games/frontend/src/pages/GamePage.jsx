@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { FaAngleLeft, FaSyncAlt } from 'react-icons/fa';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'http://https://diamond11-backend.onrender.com';
 
 const GamePage = () => {
   const { gameCode } = useParams();
