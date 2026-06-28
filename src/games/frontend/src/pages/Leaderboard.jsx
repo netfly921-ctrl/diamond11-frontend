@@ -4,7 +4,7 @@ import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
 import { FaTrophy, FaCrown, FaMedal } from 'react-icons/fa';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://diamond11-backend.onrender.com';
 
 const Leaderboard = () => {
   const [data, setData] = useState(null);

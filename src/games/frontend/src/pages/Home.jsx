@@ -6,7 +6,7 @@ import BottomNav from '../components/BottomNav';
 import Header from '../components/Header';
 import { FaSyncAlt, FaGamepad } from 'react-icons/fa';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://diamond11-backend.onrender.com';
 
 // ✅ IMAGE PATH CLEANER - Quotes, double slashes, double paths sab fix karega
 const getCleanImageUrl = (imagePath) => {

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://diamond11-backend.onrender.com';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {

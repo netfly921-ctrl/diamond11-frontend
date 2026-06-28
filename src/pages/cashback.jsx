@@ -5,7 +5,7 @@ import Header from '../components/header';
 import BottomNav from '../components/bottomnav';
 import { FaPercent, FaRupeeSign } from 'react-icons/fa';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://diamond11-backend.onrender.com';
 
 const Cashback = () => {
   const { user, updateUser } = useAuth();

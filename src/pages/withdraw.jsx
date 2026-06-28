@@ -6,7 +6,7 @@ import Header from '../components/header';
 import BottomNav from '../components/bottomnav';
 import { FaBuilding, FaWallet } from 'react-icons/fa';  // ✅ FaBank ki jagah FaBuilding use karo
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://diamond11-backend.onrender.com';
 
 const Withdraw = () => {
   const { user } = useAuth();

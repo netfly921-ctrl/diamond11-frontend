@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API = process.env.REACT_APP_API_URL || 'https://diamond11-backend.onrender.com';
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState({ matches: 0, bets: 0, pendingBets: 0 });

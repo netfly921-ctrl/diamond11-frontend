@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { FaSave, FaMoneyBillWave, FaBuilding, FaQrcode, FaUpload, FaTrash } from 'react-icons/fa';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://diamond11-backend.onrender.com';
 
 const Settings = () => {
   const [loading, setLoading] = useState(false);

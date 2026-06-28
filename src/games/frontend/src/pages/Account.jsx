@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { FaArrowDown, FaArrowUp, FaWallet, FaGift, FaHistory, FaChartLine, FaPiggyBank, FaCog, FaInfoCircle, FaCommentDots, FaSignOutAlt, FaBell, FaCrown, FaCalendarCheck, FaTrophy } from 'react-icons/fa';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://diamond11-backend.onrender.com';
 
 const Account = () => {
   const { user, logout } = useAuth();

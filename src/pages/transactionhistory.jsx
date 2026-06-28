@@ -6,7 +6,7 @@ import Header from '../components/header';
 import BottomNav from '../components/bottomnav';
 import { FaHistory, FaArrowDown, FaArrowUp, FaGamepad, FaGift } from 'react-icons/fa';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://diamond11-backend.onrender.com';
 
 const TransactionHistory = () => {
   const { user } = useAuth();

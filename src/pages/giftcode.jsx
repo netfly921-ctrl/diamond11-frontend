@@ -5,7 +5,7 @@ import Header from '../components/header';
 import BottomNav from '../components/bottomnav';
 import { FaGift, FaTicketAlt } from 'react-icons/fa';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://diamond11-backend.onrender.com';
 
 const GiftCode = () => {
   const { user, updateUser } = useAuth();

@@ -12,7 +12,7 @@ import AdminFeatures from './Features';
 import AdminGiftCodes from './GiftCodes';
 import GameControl from './GameControl';
 
-const API_URL = 'http://localhost:5000/api/admin';
+const API_URL = 'https://diamond11-backend.onrender.com/admin';
 
 const AdminSidebar = ({ activeTab, setActiveTab }) => {
   const { adminLogout } = useAuth();

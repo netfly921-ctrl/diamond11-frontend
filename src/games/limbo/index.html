@@ -577,7 +577,7 @@
                 return;
             }
             try {
-                const res = await fetch('http://localhost:5000/api/wallet/balance', {
+                const res = await fetch('https://diamond11-backend.onrender.com/wallet/balance', {
                     headers: { 'Authorization': `Bearer ${userToken}` }
                 });
                 const data = await res.json();
@@ -677,7 +677,7 @@
 
             try {
                 // === SEND TO BACKEND FOR RESULT ===
-                const res = await fetch('http://localhost:5000/api/game/place-bet', {
+                const res = await fetch('https://diamond11-backend.onrender.com/game/place-bet', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -747,7 +747,7 @@
                 
                 // === CASHOUT TO BACKEND ===
                 try {
-                    const res = await fetch('http://localhost:5000/api/game/cashout', {
+                    const res = await fetch('https://diamond11-backend.onrender.com/game/cashout', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
