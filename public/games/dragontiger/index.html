@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dragon Tiger - Diamond 11</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <script>
+    const soundManager = {
+        win: null, lose: null, click: null, enabled: true,
+        init() {
+            this.enabled = localStorage.getItem('D11_SOUND') !== '0';
+            this.win = new Audio('win.mp3'); this.lose = new Audio('lose.mp3'); this.click = new Audio('click.mp3');
+            this.win.volume = 0.7; this.lose.volume = 0.6; this.click.volume = 0.4;
+            this.updateBtn();
+            document.addEventListener('click', () => { [this.win, this.lose, this.click].forEach(a => a.play().then(() => a.pause()).catch(()=>{})); }, { once: true });
+        },
+        updateBtn() { const b = document.getElementById('soundBtn'); if (b) b.innerHTML = this.enabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>'; },
+        play(t) { if (!this.enabled) return; try { this[t].currentTime = 0; this[t].play().catch(()=>{}); } catch(e){} }
+    };
+    window.toggleSound = () => { soundManager.enabled = !soundManager.enabled; localStorage.setItem('D11_SOUND', soundManager.enabled?'1':'0'); soundManager.updateBtn(); soundManager.play('click'); };
+    addEventListener('load', () => soundManager.init());
+    </script>
+    <style>
+        :root { --bg: #0a0a0f; --glass: rgba(255,255,255,0.05); --border: rgba(255,255,255,0.1); --gold: #ffd700; --red: #ff2a2a; --yellow: #ffd966; --orange: #fb923c; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 15px; padding-top: 65px; }
+        #topBar { position: fixed; top: 0; left: 0; right: 0; height: 50px; background: #14141f; border-bottom: 2px solid var(--orange); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; z-index: 999; }
+        .box { width: 100%; max-width: 420px; background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 20px; }
+        .poster { height: 100px; border-radius: 16px; background: linear-gradient(135deg, rgba(255,42,42,0.2), rgba(0,0,0,0.6)), url('dragontiger-poster.jpg') center/cover; margin-bottom: 15px; position: relative; }
+        .sound-btn { position: absolute; top: 10px; right: 10px; width: 38px; height: 38px; background: rgba(0,0,0,0.6); border-radius: 10px; display: grid; place-items: center; cursor: pointer; }
+        .game-area { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 16px; margin-bottom: 15px; }
+        .card-slot { text-align: center; }
+        .card { height: 120px; width: 85px; background: white; border-radius: 10px; margin: 0 auto 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; color: #111; position: relative; transition: 0.5s; transform-style: preserve-3d; }
+        .card.hidden { background: #333; color: transparent; transform: rotateY(180deg); }
+        .bet-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .bet-btn { padding: 15px; border: 2px solid var(--border); border-radius: 14px; background: rgba(0,0,0,0.3); color: white; font-weight: 800; cursor: pointer; text-align: center; }
+        .bet-btn.dragon { color: var(--red); } .bet-btn.tiger { color: #0088ff; } .bet-btn.tie { color: #00ff88; }
+        .bet-btn.active.dragon { border-color: var(--red); background: rgba(255,42,42,0.15); }
+        .bet-btn.active.tiger { border-color: #0088ff; background: rgba(0,136,255,0.15); }
+        .bet-btn.active.tie { border-color: #00ff88; background: rgba(0,255,136,0.15); }
+        .action-btn { width: 100%; padding: 16px; border-radius: 14px; background: linear-gradient(135deg, var(--orange), #ff6b00); color: black; font-weight: 900; font-size: 1.1rem; border: none; cursor: pointer; }
+        .action-btn:disabled { opacity: 0.5; }
+        .toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-120px); background: #000; border: 1px solid var(--orange); padding: 10px 20px; border-radius: 12px; z-index: 1000; transition: 0.3s; } .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+    <div id="topBar"><div>🐲 DRAGON TIGER</div><div style="color:var(--gold)">₹<span id="topBal">0.00</span></div></div>
+    <div class="toast" id="toast"></div>
+    <div class="box">
+        <div class="poster"><button class="sound-btn" id="soundBtn" onclick="toggleSound()"><i class="fa-solid fa-volume-high"></i></button></div>
+        <div class="game-area">
+            <div class="card-slot"><h3 style="color:var(--red)">DRAGON</h3><div class="card hidden" id="cardD">?</div></div>
+            <div class="card-slot"><h3 style="color:#0088ff">TIGER</h3><div class="card hidden" id="cardT">?</div></div>
+        </div>
+        <div class="bet-grid">
+            <button class="bet-btn dragon" id="btnD" onclick="setChoice('dragon')">DRAGON (2x)</button>
+            <button class="bet-btn tie" id="btnTie" onclick="setChoice('tie')">TIE (9x)</button>
+            <button class="bet-btn tiger" id="btnT" onclick="setChoice('tiger')">TIGER (2x)</button>
+        </div>
+        <input type="number" id="betInput" value="10" min="10" style="width:100%; padding:14px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:12px; color:white; font-weight:700; margin-bottom:15px; outline:none;">
+        <button class="action-btn" id="goBtn" onclick="playGame()">FIGHT ⚔️</button>
+    </div>
+    <script>
+        const params = new URLSearchParams(location.search); const token = params.get('token'); const API = 'https://diamond11-backend.onrender.com';
+        let balance = 0, playing = false, choice = 'dragon';
+        const cards = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'], cardValues = {A:1,J:11,Q:12,K:13}; for(let i=2; i<=10; i++) cardValues[i.toString()] = i;
+
+        async function getBalance() { if(!token) return; try { const r = await fetch(`${API}/wallet/balance`, { headers: { 'Authorization': `Bearer ${token}` } }); const d = await r.json(); if(d.success) { balance = d.data.balance; document.getElementById('topBal').textContent = balance.toFixed(2); } } catch(e){} }
+        window.setChoice = (c) => { if(playing) return; choice = c; soundManager.play('click'); document.getElementById('btnD').className = 'bet-btn dragon' + (c === 'dragon' ? ' active' : ''); document.getElementById('btnT').className = 'bet-btn tiger' + (c === 'tiger' ? ' active' : ''); document.getElementById('btnTie').className = 'bet-btn tie' + (c === 'tie' ? ' active' : ''); };
+
+        window.playGame = async () => {
+            if(playing) return;
+            const bet = parseFloat(document.getElementById('betInput').value) || 10;
+            if(bet < 10) return showToast('Min ₹10'); if(bet > balance) return showToast('Low balance');
+            playing = true; document.getElementById('goBtn').disabled = true; soundManager.play('click');
+
+            try { await fetch(`${API}/game/place-bet`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ gameCode: 'dragontiger', betAmount: bet }) }); getBalance(); } catch(e) { playing = false; document.getElementById('goBtn').disabled = false; return showToast('Bet failed'); }
+
+            document.getElementById('cardD').className = 'card hidden'; document.getElementById('cardT').className = 'card hidden';
+
+            // ✅ 40% WIN / 60% LOSS
+            const win = Math.random() < 0.40;
+            let valD, valT;
+            if (win) {
+                if (choice === 'tie') { valD = valT = Math.floor(Math.random()*13); } 
+                else if (choice === 'dragon') { valD = 2 + Math.floor(Math.random()*11); valT = Math.floor(Math.random()*valD); } 
+                else { valT = 2 + Math.floor(Math.random()*11); valD = Math.floor(Math.random()*valT); }
+            } else {
+                if (choice === 'tie') { valD = Math.floor(Math.random()*13); valT = (valD + 1 + Math.floor(Math.random()*12)) % 13; } 
+                else if (choice === 'dragon') { valT = 2 + Math.floor(Math.random()*11); valD = Math.floor(Math.random()*valT); } 
+                else { valD = 2 + Math.floor(Math.random()*11); valT = Math.floor(Math.random()*valD); }
+            }
+
+            setTimeout(async () => {
+                document.getElementById('cardD').className = 'card'; document.getElementById('cardT').className = 'card';
+                document.getElementById('cardD').textContent = cards[valD]; document.getElementById('cardT').textContent = cards[valT];
+                playing = false; document.getElementById('goBtn').disabled = false;
+                
+                const mult = choice === 'tie' ? 9 : 2;
+                if(win) {
+                    soundManager.play('win'); showToast(`🎉 Won ₹${(bet*mult).toFixed(0)}!`);
+                    try { await fetch(`${API}/game/cashout`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ gameCode: 'dragontiger', betAmount: bet, winAmount: bet*mult, multiplier: mult }) }); getBalance(); } catch(e){}
+                } else { soundManager.play('lose'); showToast('💸 Lost!'); }
+            }, 1000);
+        };
+        function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
+        getBalance(); setChoice('dragon'); setInterval(getBalance, 5000);
+    </script>
+</body>
+</html>
