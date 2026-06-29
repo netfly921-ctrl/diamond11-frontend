@@ -8,28 +8,6 @@ import { FaSyncAlt, FaGamepad } from 'react-icons/fa';
 
 const API_URL = 'https://diamond11-backend.onrender.com';
 
-// ✅ IMAGE PATH CLEANER - Quotes, double slashes, double paths sab fix karega
-const getCleanImageUrl = (imagePath) => {
-  if (!imagePath) return '';
-  
-  // Step 1: Remove all extra quotes
-  let clean = imagePath.replace(/"/g, '').replace(/'/g, '');
-  
-  // Step 2: Remove leading slashes
-  clean = clean.replace(/^\/+/, '');
-  
-  // Step 3: Fix double "game-images/game-images" 
-  clean = clean.replace(/game-images\/game-images/g, 'game-images');
-  
-  // Step 4: Make sure path starts with game-images/
-  if (!clean.startsWith('game-images/')) {
-    clean = 'game-images/' + clean;
-  }
-  
-  // Step 5: Final URL with leading /
-  return '/' + clean;
-};
-
 const Home = () => {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
@@ -57,20 +35,27 @@ const Home = () => {
     };
   }, []);
 
-  const fetchGames = async () => {
-    try {
-      const res = await axios.get(`${API_URL}/game/list`);
-      if (res.data.success) {
-        setGames(res.data.data || []);
-        // Debug: Show clean paths
-        console.log('🎮 Games with clean paths:');
-        (res.data.data || []).forEach(g => {
-          console.log(`  ${g.name}: "${g.image}" → "${getCleanImageUrl(g.image)}"`);
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching games:', error);
-    }
+  // ✅ STATIC GAMES LIST - Backend ki zaroorat nahi
+  const fetchGames = () => {
+    const gamesList = [
+      { _id: '1', name: 'Aviator', displayName: 'Aviator', path: '/games/aviator/', emoji: '✈️' },
+      { _id: '2', name: 'Coin Flip', displayName: 'Coin Flip', path: '/games/coinflip/', emoji: '🪙' },
+      { _id: '3', name: 'Wingo', displayName: 'Wingo', path: '/games/wingo/', emoji: '🎡' },
+      { _id: '4', name: 'Andar Bahar', displayName: 'Andar Bahar', path: '/games/andarbahar/', emoji: '🃏' },
+      { _id: '5', name: 'Color Prediction', displayName: 'Color', path: '/games/colorprediction/', emoji: '🎨' },
+      { _id: '6', name: 'Dice', displayName: 'Dice', path: '/games/dice/', emoji: '🎲' },
+      { _id: '7', name: 'Dragon Tiger', displayName: 'Dragon Tiger', path: '/games/dragontiger/', emoji: '🐉' },
+      { _id: '8', name: 'Teen Patti', displayName: 'Teen Patti', path: '/games/teenpatti/', emoji: '♠️' },
+      { _id: '9', name: 'Hilo', displayName: 'Hilo', path: '/games/hilo/', emoji: '🔢' },
+      { _id: '10', name: 'Limbo', displayName: 'Limbo', path: '/games/limbo/', emoji: '🚀' },
+      { _id: '11', name: 'Mines', displayName: 'Mines', path: '/games/mines/', emoji: '💣' },
+      { _id: '12', name: 'Plinko', displayName: 'Plinko', path: '/games/plinko/', emoji: '⚪' },
+      { _id: '13', name: 'Roulette', displayName: 'Roulette', path: '/games/roulette/', emoji: '🎯' },
+      { _id: '14', name: 'Chicken Pro', displayName: 'Chicken Pro', path: '/games/CHICKEN PRO/', emoji: '🐔' },
+      { _id: '15', name: 'Wheel', displayName: 'Wheel', path: '/games/wheel/', emoji: '🎡' },
+    ];
+    setGames(gamesList);
+    console.log('🎮 Games loaded:', gamesList.length);
   };
 
   const fetchBalance = async () => {
@@ -90,6 +75,11 @@ const Home = () => {
 
   const handleImageError = (gameId) => {
     setImgErrors(prev => ({ ...prev, [gameId]: true }));
+  };
+
+  // ✅ Game open karne ke liye - direct URL open hoga
+  const openGame = (game) => {
+    window.location.href = game.path;
   };
 
   return (
@@ -149,41 +139,23 @@ const Home = () => {
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-y-5 gap-x-3">
-            {games.map((game) => {
-              const cleanUrl = getCleanImageUrl(game.image);
-              const hasError = imgErrors[game._id];
-
-              return (
-                <div
-                  key={game._id}
-                  onClick={() => navigate(`/game/${game.code}`)}
-                  className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group"
-                >
-                  {/* Game Icon Box */}
-                  <div className="w-[82px] h-[82px] bg-gradient-to-b from-[#FFB533] to-[#FF7A00] rounded-2xl flex items-center justify-center overflow-hidden border-2 border-orange-300/30 shadow-lg group-hover:scale-105 transition-transform duration-200">
-                    {cleanUrl && !hasError ? (
-                      <img
-                        src={cleanUrl}
-                        alt={game.displayName || game.name}
-                        className="w-full h-full object-contain p-2"
-                        onLoad={() => console.log('✅', game.name, cleanUrl)}
-                        onError={() => {
-                          console.error('❌', game.name, cleanUrl);
-                          handleImageError(game._id);
-                        }}
-                      />
-                    ) : (
-                      <FaGamepad className="text-white/80 text-3xl" />
-                    )}
-                  </div>
-
-                  {/* Game Name */}
-                  <p className="text-white text-[11px] font-semibold mt-1.5 text-center leading-tight max-w-[85px] truncate">
-                    {game.displayName || game.name}
-                  </p>
+            {games.map((game) => (
+              <div
+                key={game._id}
+                onClick={() => openGame(game)}
+                className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group"
+              >
+                {/* Game Icon Box */}
+                <div className="w-[82px] h-[82px] bg-gradient-to-b from-[#FFB533] to-[#FF7A00] rounded-2xl flex items-center justify-center overflow-hidden border-2 border-orange-300/30 shadow-lg group-hover:scale-105 transition-transform duration-200">
+                  <div className="text-4xl">{game.emoji}</div>
                 </div>
-              );
-            })}
+
+                {/* Game Name */}
+                <p className="text-white text-[11px] font-semibold mt-1.5 text-center leading-tight max-w-[85px] truncate">
+                  {game.displayName || game.name}
+                </p>
+              </div>
+            ))}
           </div>
         )}
       </div>
