@@ -1,3 +1,4 @@
+console.log("🔥🔥🔥 NEW FILE LOADED - TEST 123 🔥🔥🔥");
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
