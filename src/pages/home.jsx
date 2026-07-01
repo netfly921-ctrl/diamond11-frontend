@@ -35,22 +35,16 @@ const Home = () => {
     };
   }, []);
 
-  // ✅ MONGODB SE FETCH KARO
   const fetchGames = async () => {
     try {
-      console.log('Fetching games from:', `${API_URL}/api/game/list`);
       const res = await axios.get(`${API_URL}/api/game/list`);
-      
-      if (res.data.success && res.data.data) {
-        console.log('Games received:', res.data.data);
-        setGames(res.data.data);
+      if (res.data.success) {
+        setGames(res.data.data || []);
       } else {
-        console.log('No games data received');
         setGames([]);
       }
     } catch (error) {
       console.error('Error fetching games:', error);
-      // Fallback agar API fail ho
       setGames([]);
     } finally {
       setLoading(false);
@@ -59,7 +53,10 @@ const Home = () => {
 
   const fetchBalance = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/wallet/balance`);
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/wallet/balance`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       if (res.data.success) {
         updateUser({ ...user, balance: res.data.data.balance });
       }
@@ -70,6 +67,11 @@ const Home = () => {
     setRefreshing(true);
     await fetchBalance();
     setTimeout(() => setRefreshing(false), 800);
+  };
+
+  const openGame = (game) => {
+    const playUrl = game.gameUrl || game.path || `/games/${game.code}/index.html`;
+    window.location.href = playUrl;
   };
 
   return (
@@ -103,7 +105,7 @@ const Home = () => {
         <div className="bg-[#5B21B6] rounded-xl p-3.5 flex items-center justify-between border border-white/10 shadow-lg">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/wallet')}>
             <div className="w-11 h-11 bg-gradient-to-tr from-yellow-300 to-orange-500 rounded-full flex items-center justify-center text-purple-900 font-black text-lg shadow-inner">
-              {user?.uid?.charAt(0) || 'D'}
+              {user?.uid?.charAt(0) || 'U'}
             </div>
             <div>
               <p className="text-purple-300 text-[10px] font-medium">ID: {user?.uid || 'N/A'}</p>
@@ -116,7 +118,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* GAMES SECTION */}
+      {/* Games Grid */}
       <div className="px-4 pb-10">
         <h3 className="text-white font-bold text-base mb-4 flex items-center gap-2">
           <span className="w-1 h-5 bg-yellow-400 rounded-full"></span> 🎮 All Games ({games.length})
@@ -124,59 +126,41 @@ const Home = () => {
 
         {loading ? (
           <div className="text-center text-purple-300 py-12">
-            <div className="text-5xl mb-3 animate-bounce">⏳</div>
+            <div className="text-5xl mb-3 animate-bounce">🎮</div>
             <p>Loading Games...</p>
           </div>
         ) : games.length === 0 ? (
           <div className="text-center text-purple-300 py-12">
             <div className="text-5xl mb-3">😢</div>
             <p>No Games Available</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="mt-4 bg-yellow-400 text-purple-900 px-4 py-2 rounded-full text-sm font-bold"
-            >
-              Retry Loading
+            <button onClick={fetchGames} className="mt-4 bg-yellow-400 text-purple-900 px-4 py-2 rounded-full text-sm font-bold">
+              Retry
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-y-5 gap-x-3">
-            {games.map((game) => (
-              <div
-                key={game._id}
-                onClick={() => {
-                  // ✅ YEH SAHI URL USE KAREGA
-                  const url = game.gameUrl || `/games/${game.code || game.name?.toLowerCase()}/index.html`;
-                  console.log('Opening game:', url);
-                  window.location.href = url;
-                }}
-                className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group"
-              >
-                {/* Game Icon Box */}
-                <div className="w-[90px] h-[90px] bg-white rounded-2xl flex items-center justify-center border-2 border-white/20 shadow-lg overflow-hidden group-hover:border-yellow-300 group-hover:scale-105 transition-all duration-200">
-                  <img 
-                    src={game.image || `/game-images/${game.code || game.name?.toLowerCase()}.png`} 
-                    alt={game.name} 
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // Agar image fail ho toh gradient box dikhao
-                      e.target.onerror = null;
-                      e.target.style.display = 'none';
-                      e.target.parentElement.classList.add('bg-gradient-to-br', 'from-purple-500', 'to-pink-500');
-                      // Emoji fallback
-                      const span = document.createElement('span');
-                      span.innerText = '🎮';
-                      span.className = 'text-4xl';
-                      e.target.parentElement.appendChild(span);
-                    }}
-                  />
+            {games.map((game) => {
+              const imageUrl = game.image || `/game-images/${game.code}.png`;
+              return (
+                <div
+                  key={game._id || game.code}
+                  onClick={() => openGame(game)}
+                  className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group"
+                >
+                  <div className="w-[90px] h-[90px] bg-[#2D0B5A] rounded-2xl flex items-center justify-center border border-white/10 shadow-lg overflow-hidden group-hover:border-yellow-400 group-hover:scale-105 transition-all duration-200">
+                    <img
+                      src={imageUrl}
+                      alt={game.displayName || game.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => { e.currentTarget.src = '/game-images/01.png'; }}
+                    />
+                  </div>
+                  <p className="text-white text-[11px] font-bold mt-2 text-center leading-tight max-w-[90px] truncate">
+                    {game.displayName || game.name}
+                  </p>
                 </div>
-
-                {/* Game Name */}
-                <p className="text-white text-[11px] font-bold mt-2 text-center leading-tight max-w-[90px] truncate">
-                  {game.name}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
