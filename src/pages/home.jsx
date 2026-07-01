@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import BottomNav from '../components/BottomNav';
 import Header from '../components/Header';
-import { FaSyncAlt, FaGamepad, FaDice, FaAirFreshener } from 'react-icons/fa';
+import { FaSyncAlt } from 'react-icons/fa';
 
 const API_URL = 'https://diamond11-backend.onrender.com';
 
@@ -12,8 +12,8 @@ const Home = () => {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [imgErrors, setImgErrors] = useState({});
   const [banners] = useState([
     { id: 1, text: 'RECHARGE BONUS 100%', sub: 'Deposit now and get double!', color: 'from-pink-500 via-red-500 to-yellow-500', emoji: '🎁' },
     { id: 2, text: 'DAILY BONUS ₹500', sub: 'Login daily and claim!', color: 'from-blue-500 via-purple-500 to-pink-500', emoji: '💰' },
@@ -23,9 +23,7 @@ const Home = () => {
   const [currentBanner, setCurrentBanner] = useState(0);
 
   useEffect(() => {
-    // Yahi hai magic function - Backend se independent
-    loadStaticGames();
-    
+    fetchGames();
     fetchBalance();
     const balanceInterval = setInterval(fetchBalance, 15000);
     const bannerInterval = setInterval(() => {
@@ -37,139 +35,25 @@ const Home = () => {
     };
   }, []);
 
-  // ✅ STATIC GAMES WITH REAL ICONS & IMAGES
-  const loadStaticGames = () => {
-    const gameList = [
-      { 
-        _id: '1', 
-        name: 'Aviator', 
-        path: '/games/aviator/', 
-        icon: '✈️',
-        // Ye image path check karta hai /public/games/aviator/ ke andar
-        img: '/games/aviator/icon.png',
-        bg: 'from-blue-500 to-cyan-400'
-      },
-      { 
-        _id: '2', 
-        name: 'Andar Bahar', 
-        path: '/games/andarbahar/', 
-        icon: '🃏',
-        img: '/games/andarbahar/icon.png',
-        bg: 'from-purple-600 to-pink-500'
-      },
-      { 
-        _id: '3', 
-        name: 'Wingo', 
-        path: '/games/wingo/', 
-        icon: '🎡',
-        img: '/games/wingo/icon.png',
-        bg: 'from-orange-500 to-red-500'
-      },
-      { 
-        _id: '4', 
-        name: 'Coin Flip', 
-        path: '/games/coinflip/', 
-        icon: '🪙',
-        img: '/games/coinflip/icon.png',
-        bg: 'from-yellow-400 to-amber-600'
-      },
-      { 
-        _id: '5', 
-        name: 'Dragon Tiger', 
-        path: '/games/dragontiger/', 
-        icon: '🐉',
-        img: '/games/dragontiger/icon.png',
-        bg: 'from-red-600 to-orange-600'
-      },
-      { 
-        _id: '6', 
-        name: 'Color Prediction', 
-        path: '/games/colorprediction/', 
-        icon: '🎨',
-        img: '/games/colorprediction/icon.png',
-        bg: 'from-violet-500 to-indigo-500'
-      },
-      { 
-        _id: '7', 
-        name: 'Teen Patti', 
-        path: '/games/teenpatti/', 
-        icon: '♠️',
-        img: '/games/teenpatti/icon.png',
-        bg: 'from-emerald-500 to-teal-700'
-      },
-      { 
-        _id: '8', 
-        name: 'Mines', 
-        path: '/games/mines/', 
-        icon: '💣',
-        img: '/games/mines/icon.png',
-        bg: 'from-gray-700 to-slate-900'
-      },
-      { 
-        _id: '9', 
-        name: 'Limbo', 
-        path: '/games/limbo/', 
-        icon: '🚀',
-        img: '/games/limbo/icon.png',
-        bg: 'from-indigo-500 to-purple-900'
-      },
-      { 
-        _id: '10', 
-        name: 'Roulette', 
-        path: '/games/roulette/', 
-        icon: '🎯',
-        img: '/games/roulette/icon.png',
-        bg: 'from-red-700 to-black'
-      },
-      { 
-        _id: '11', 
-        name: 'Plinko', 
-        path: '/games/plinko/', 
-        icon: '⚪',
-        img: '/games/plinko/icon.png',
-        bg: 'from-blue-400 to-blue-800'
-      },
-      { 
-        _id: '12', 
-        name: 'Chicken Pro', 
-        path: '/games/CHICKEN PRO/', 
-        icon: '🐔',
-        img: '/games/CHICKEN PRO/icon.png',
-        bg: 'from-yellow-400 to-orange-600'
-      },
-      { 
-        _id: '13', 
-        name: 'Hilo', 
-        path: '/games/hilo/', 
-        icon: '🔢',
-        img: '/games/hilo/icon.png',
-        bg: 'from-green-600 to-lime-500'
-      },
-      { 
-        _id: '14', 
-        name: 'Wheel', 
-        path: '/games/wheel/', 
-        icon: '🎡',
-        img: '/games/wheel/icon.png',
-        bg: 'from-fuchsia-500 to-pink-700'
-      },
-      { 
-        _id: '15', 
-        name: 'Dice', 
-        path: '/games/dice/', 
-        icon: '🎲',
-        img: '/games/dice/icon.png',
-        bg: 'from-rose-500 to-red-800'
-      },
-    ];
-    
-    setGames(gameList);
-    console.log('✅ Games loaded:', gameList.length, 'items');
+  // ✅ FETCH GAMES FROM MONGODB
+  const fetchGames = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/game/list`);
+      if (res.data.success) {
+        setGames(res.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching games:', error);
+      // Fallback - agar API fail ho toh
+      setGames([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchBalance = async () => {
     try {
-      const res = await axios.get(`${API_URL}/wallet/balance`);
+      const res = await axios.get(`${API_URL}/api/wallet/balance`);
       if (res.data.success) {
         updateUser({ ...user, balance: res.data.data.balance });
       }
@@ -182,20 +66,11 @@ const Home = () => {
     setTimeout(() => setRefreshing(false), 800);
   };
 
-  const handleImageError = (gameId) => {
-    setImgErrors(prev => ({ ...prev, [gameId]: true }));
-  };
-
-  // ✅ Game Open Function - Naya tab/open karega
-  const openGame = (game) => {
-    window.open(game.path, '_blank');
-  };
-
   return (
     <div className="pb-20 min-h-screen bg-[#4A0E8F]">
       <Header />
 
-      {/* Banner Slider */}
+      {/* Banner */}
       <div className="px-3 mt-3">
         <div className={`bg-gradient-to-r ${banners[currentBanner].color} rounded-2xl shadow-xl overflow-hidden`} style={{ minHeight: '140px' }}>
           <div className="flex items-center justify-between h-full p-5">
@@ -217,7 +92,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Balance Card */}
+      {/* Balance */}
       <div className="px-3 mb-4">
         <div className="bg-[#5B21B6] rounded-xl p-3.5 flex items-center justify-between border border-white/10 shadow-lg">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/wallet')}>
@@ -235,65 +110,45 @@ const Home = () => {
         </div>
       </div>
 
-      {/* GAMES GRID */}
+      {/* Games Grid */}
       <div className="px-4 pb-10">
         <h3 className="text-white font-bold text-base mb-4 flex items-center gap-2">
           <span className="w-1 h-5 bg-yellow-400 rounded-full"></span> 🎮 All Games ({games.length})
         </h3>
 
-        {games.length === 0 ? (
+        {loading ? (
           <div className="text-center text-purple-300 py-12 animate-pulse">
             <div className="text-5xl mb-3">⏳</div>
             <p>Loading Games...</p>
+          </div>
+        ) : games.length === 0 ? (
+          <div className="text-center text-purple-300 py-12">
+            <div className="text-5xl mb-3">😢</div>
+            <p>No Games Available</p>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-y-4 gap-x-3">
             {games.map((game) => (
               <div
                 key={game._id}
-                onClick={() => openGame(game)}
-                className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform duration-200 group"
+                onClick={() => window.location.href = game.path}
+                className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group"
               >
-                {/* Game Icon Box - Professional Look */}
-                <div className={`w-[85px] h-[85px] bg-gradient-to-br ${game.bg} rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white/20 shadow-lg relative group-hover:border-yellow-300 group-hover:scale-105 transition-all duration-200`}>
-                  
-                  {/* Background Pattern */}
-                  <div className="absolute inset-0 bg-black/10"></div>
-                  
-                  {/* Try Image First */}
-                  {!imgErrors[game._id] && game.img ? (
-                    <img
-                      src={game.img}
-                      alt={game.name}
-                      className="relative z-10 w-full h-full object-contain p-2 drop-shadow-lg"
-                      onError={() => handleImageError(game._id)}
-                    />
+                <div className={`w-[85px] h-[85px] bg-gradient-to-br ${game.gradient || 'from-purple-500 to-pink-500'} rounded-2xl flex items-center justify-center border-2 border-white/20 shadow-lg group-hover:border-yellow-300 group-hover:scale-105 transition-all duration-200`}>
+                  {game.image ? (
+                    <img src={game.image} alt={game.displayName} className="w-full h-full object-contain p-2" onError={(e) => { e.target.style.display = 'none'; }} />
                   ) : (
-                    /* Fallback Emoji if no image */
-                    <span className="relative z-10 text-4xl drop-shadow-md select-none">
-                      {game.icon}
-                    </span>
+                    <span className="text-4xl select-none">{game.icon || '🎮'}</span>
                   )}
-                  
-                  {/* Shine Effect */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent transform -skew-x-12 group-hover:translate-x-full transition-transform duration-700"></div>
                 </div>
-
-                {/* Game Name */}
-                <p className="text-white text-[11px] font-bold mt-2 text-center leading-tight max-w-[90px] capitalize shadow-text">
-                  {game.name}
+                <p className="text-white text-[11px] font-bold mt-2 text-center leading-tight">
+                  {game.displayName}
                 </p>
               </div>
             ))}
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        .shadow-text {
-          text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        }
-      `}</style>
 
       <BottomNav activeTab="home" />
     </div>
