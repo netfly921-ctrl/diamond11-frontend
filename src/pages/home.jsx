@@ -1,4 +1,3 @@
-console.log("🔥🔥🔥 NEW FILE LOADED - TEST 123 🔥🔥🔥");
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -13,7 +12,6 @@ const Home = () => {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [banners] = useState([
     { id: 1, text: 'RECHARGE BONUS 100%', sub: 'Deposit now and get double!', color: 'from-pink-500 via-red-500 to-yellow-500', emoji: '🎁' },
@@ -24,7 +22,7 @@ const Home = () => {
   const [currentBanner, setCurrentBanner] = useState(0);
 
   useEffect(() => {
-    fetchGames();
+    loadGames(); // Database ki jagah ab direct folder se load karenge
     fetchBalance();
     const balanceInterval = setInterval(fetchBalance, 15000);
     const bannerInterval = setInterval(() => {
@@ -36,20 +34,23 @@ const Home = () => {
     };
   }, []);
 
-  // ✅ FETCH GAMES FROM MONGODB
-  const fetchGames = async () => {
-    try {
-      const res = await axios.get(`${API_URL}/api/game/list`);
-      if (res.data.success) {
-        setGames(res.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching games:', error);
-      // Fallback - agar API fail ho toh
-      setGames([]);
-    } finally {
-      setLoading(false);
-    }
+  // ✅ STATIC LIST WITH REAL IMAGES & CORRECT PATHS
+  const loadGames = () => {
+    const gameList = [
+      { id: '1', name: 'Aviator', path: '/games/aviator/', image: '/game-images/aviator.png', gradient: 'from-blue-500 to-cyan-400' },
+      { id: '2', name: 'Wingo', path: '/games/wingo/', image: '/game-images/wingo.png', gradient: 'from-orange-500 to-red-500' },
+      { id: '3', name: 'Coin Flip', path: '/games/coinflip/', image: '/game-images/coinflip.png', gradient: 'from-yellow-400 to-amber-600' },
+      { id: '4', name: 'Andar Bahar', path: '/games/andarbahar/', image: '/game-images/andarbahar.png', gradient: 'from-purple-600 to-pink-500' },
+      { id: '5', name: 'Dragon Tiger', path: '/games/dragontiger/', image: '/game-images/dragontiger.png', gradient: 'from-red-600 to-orange-600' },
+      { id: '6', name: 'Color Prediction', path: '/games/colorprediction/', image: '/game-images/colorprediction.png', gradient: 'from-violet-500 to-indigo-500' },
+      { id: '7', name: 'Teen Patti', path: '/games/teenpatti/', image: '/game-images/teenpatti.png', gradient: 'from-emerald-500 to-teal-700' },
+      { id: '8', name: 'Mines', path: '/games/mines/', image: '/game-images/mines.png', gradient: 'from-gray-700 to-slate-900' },
+      { id: '9', name: 'Plinko', path: '/games/plinko/', image: '/game-images/plinko.png', gradient: 'from-blue-400 to-blue-800' },
+      { id: '10', name: 'Roulette', path: '/games/roulette/', image: '/game-images/roulette.png', gradient: 'from-red-700 to-black' },
+      { id: '11', name: 'Wheel', path: '/games/wheel/', image: '/game-images/wheel.png', gradient: 'from-fuchsia-500 to-pink-700' },
+      { id: '12', name: 'Dice', path: '/games/dice/', image: '/game-images/dice.png', gradient: 'from-rose-500 to-red-800' },
+    ];
+    setGames(gameList);
   };
 
   const fetchBalance = async () => {
@@ -71,7 +72,7 @@ const Home = () => {
     <div className="pb-20 min-h-screen bg-[#4A0E8F]">
       <Header />
 
-      {/* Banner */}
+      {/* Banner Slider */}
       <div className="px-3 mt-3">
         <div className={`bg-gradient-to-r ${banners[currentBanner].color} rounded-2xl shadow-xl overflow-hidden`} style={{ minHeight: '140px' }}>
           <div className="flex items-center justify-between h-full p-5">
@@ -93,7 +94,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Balance */}
+      {/* Balance Card */}
       <div className="px-3 mb-4">
         <div className="bg-[#5B21B6] rounded-xl p-3.5 flex items-center justify-between border border-white/10 shadow-lg">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/wallet')}>
@@ -114,41 +115,33 @@ const Home = () => {
       {/* Games Grid */}
       <div className="px-4 pb-10">
         <h3 className="text-white font-bold text-base mb-4 flex items-center gap-2">
-          <span className="w-1 h-5 bg-yellow-400 rounded-full"></span> 🎮 All Games ({games.length})
+          <span className="w-1 h-5 bg-yellow-400 rounded-full"></span> 🎮 All Games
         </h3>
 
-        {loading ? (
-          <div className="text-center text-purple-300 py-12 animate-pulse">
-            <div className="text-5xl mb-3">⏳</div>
-            <p>Loading Games...</p>
-          </div>
-        ) : games.length === 0 ? (
-          <div className="text-center text-purple-300 py-12">
-            <div className="text-5xl mb-3">😢</div>
-            <p>No Games Available</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-y-4 gap-x-3">
-            {games.map((game) => (
-              <div
-                key={game._id}
-                onClick={() => window.location.href = game.path}
-                className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group"
-              >
-                <div className={`w-[85px] h-[85px] bg-gradient-to-br ${game.gradient || 'from-purple-500 to-pink-500'} rounded-2xl flex items-center justify-center border-2 border-white/20 shadow-lg group-hover:border-yellow-300 group-hover:scale-105 transition-all duration-200`}>
-                  {game.image ? (
-                    <img src={game.image} alt={game.displayName} className="w-full h-full object-contain p-2" onError={(e) => { e.target.style.display = 'none'; }} />
-                  ) : (
-                    <span className="text-4xl select-none">{game.icon || '🎮'}</span>
-                  )}
-                </div>
-                <p className="text-white text-[11px] font-bold mt-2 text-center leading-tight">
-                  {game.displayName}
-                </p>
+        <div className="grid grid-cols-3 gap-y-5 gap-x-3">
+          {games.map((game) => (
+            <div
+              key={game.id}
+              onClick={() => window.location.href = game.path}
+              className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group"
+            >
+              {/* Game Icon Box with Real Image */}
+              <div className={`w-[90px] h-[90px] bg-gradient-to-br ${game.gradient} rounded-2xl flex items-center justify-center border-2 border-white/20 shadow-lg overflow-hidden group-hover:border-yellow-300 group-hover:scale-105 transition-all duration-200`}>
+                <img 
+                  src={game.image} 
+                  alt={game.name} 
+                  className="w-full h-full object-cover"
+                  onError={(e) => { e.target.onerror = null; e.target.src="https://via.placeholder.com/90?text=Game"; }} 
+                />
               </div>
-            ))}
-          </div>
-        )}
+              
+              {/* Game Name */}
+              <p className="text-white text-[11px] font-bold mt-2 text-center leading-tight max-w-[90px] truncate">
+                {game.name}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <BottomNav activeTab="home" />
