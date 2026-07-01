@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import BottomNav from '../components/BottomNav';
 import Header from '../components/Header';
-import { FaSyncAlt } from 'react-icons/fa';
+import { FaSyncAlt, FaGamepad } from 'react-icons/fa';
 
 const API_URL = 'https://diamond11-backend.onrender.com';
 
@@ -22,7 +22,7 @@ const Home = () => {
   const [currentBanner, setCurrentBanner] = useState(0);
 
   useEffect(() => {
-    loadGames(); // Database ki jagah ab direct folder se load karenge
+    loadGames();
     fetchBalance();
     const balanceInterval = setInterval(fetchBalance, 15000);
     const bannerInterval = setInterval(() => {
@@ -34,23 +34,23 @@ const Home = () => {
     };
   }, []);
 
-  // ✅ STATIC LIST WITH REAL IMAGES & CORRECT PATHS
+  // ✅ SAHI PATHS (Aapke Screenshot ke hisaab se)
   const loadGames = () => {
-    const gameList = [
-      { id: '1', name: 'Aviator', path: '/games/aviator/', image: '/game-images/aviator.png', gradient: 'from-blue-500 to-cyan-400' },
-      { id: '2', name: 'Wingo', path: '/games/wingo/', image: '/game-images/wingo.png', gradient: 'from-orange-500 to-red-500' },
-      { id: '3', name: 'Coin Flip', path: '/games/coinflip/', image: '/game-images/coinflip.png', gradient: 'from-yellow-400 to-amber-600' },
-      { id: '4', name: 'Andar Bahar', path: '/games/andarbahar/', image: '/game-images/andarbahar.png', gradient: 'from-purple-600 to-pink-500' },
-      { id: '5', name: 'Dragon Tiger', path: '/games/dragontiger/', image: '/game-images/dragontiger.png', gradient: 'from-red-600 to-orange-600' },
-      { id: '6', name: 'Color Prediction', path: '/games/colorprediction/', image: '/game-images/colorprediction.png', gradient: 'from-violet-500 to-indigo-500' },
-      { id: '7', name: 'Teen Patti', path: '/games/teenpatti/', image: '/game-images/teenpatti.png', gradient: 'from-emerald-500 to-teal-700' },
-      { id: '8', name: 'Mines', path: '/games/mines/', image: '/game-images/mines.png', gradient: 'from-gray-700 to-slate-900' },
-      { id: '9', name: 'Plinko', path: '/games/plinko/', image: '/game-images/plinko.png', gradient: 'from-blue-400 to-blue-800' },
-      { id: '10', name: 'Roulette', path: '/games/roulette/', image: '/game-images/roulette.png', gradient: 'from-red-700 to-black' },
-      { id: '11', name: 'Wheel', path: '/games/wheel/', image: '/game-images/wheel.png', gradient: 'from-fuchsia-500 to-pink-700' },
-      { id: '12', name: 'Dice', path: '/games/dice/', image: '/game-images/dice.png', gradient: 'from-rose-500 to-red-800' },
+    const list = [
+      { id: '1', name: 'Aviator', path: '/games/aviator/', img: '/game-images/aviator.png' },
+      { id: '2', name: 'Wingo', path: '/games/wingo/', img: '/game-images/wingo.png' },
+      { id: '3', name: 'Coin Flip', path: '/games/coinflip/', img: '/game-images/coinflip.png' },
+      { id: '4', name: 'Andar Bahar', path: '/games/andarbahar/', img: '/game-images/andarbahar.png' },
+      { id: '5', name: 'Dragon Tiger', path: '/games/dragontiger/', img: '/game-images/dragontiger.png' },
+      { id: '6', name: 'Color Prediction', path: '/games/colorprediction/', img: '/game-images/colorprediction.png' },
+      { id: '7', name: 'Teen Patti', path: '/games/teenpatti/', img: '/game-images/teenpatti.png' },
+      { id: '8', name: 'Mines', path: '/games/mines/', img: '/game-images/mines.png' },
+      { id: '10', name: 'Dice', path: '/games/dice/', img: '/game-images/dice.png' },
+      { id: '11', name: 'Plinko', path: '/game-images/plinko.png', path: '/games/plinko/', img: '/game-images/plinko.png' },
+      { id: '12', name: 'Roulette', path: '/games/roulette/', img: '/game-images/roulette.png' },
+      { id: '13', name: 'Wheel', path: '/games/wheel/', img: '/game-images/wheel.png' },
     ];
-    setGames(gameList);
+    setGames(list);
   };
 
   const fetchBalance = async () => {
@@ -87,15 +87,10 @@ const Home = () => {
             <div className="text-6xl ml-2 drop-shadow-lg">{banners[currentBanner].emoji}</div>
           </div>
         </div>
-        <div className="flex justify-center gap-1.5 mt-2 mb-3">
-          {banners.map((_, idx) => (
-            <button key={idx} onClick={() => setCurrentBanner(idx)} className={`rounded-full transition-all ${idx === currentBanner ? 'bg-yellow-400 w-4 h-1.5' : 'bg-purple-500 w-1.5 h-1.5'}`} />
-          ))}
-        </div>
       </div>
 
       {/* Balance Card */}
-      <div className="px-3 mb-4">
+      <div className="px-3 mb-4 mt-4">
         <div className="bg-[#5B21B6] rounded-xl p-3.5 flex items-center justify-between border border-white/10 shadow-lg">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/wallet')}>
             <div className="w-11 h-11 bg-gradient-to-tr from-yellow-300 to-orange-500 rounded-full flex items-center justify-center text-purple-900 font-black text-lg shadow-inner">
@@ -126,17 +121,15 @@ const Home = () => {
               className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group"
             >
               {/* Game Icon Box with Real Image */}
-              <div className={`w-[90px] h-[90px] bg-gradient-to-br ${game.gradient} rounded-2xl flex items-center justify-center border-2 border-white/20 shadow-lg overflow-hidden group-hover:border-yellow-300 group-hover:scale-105 transition-all duration-200`}>
+              <div className="w-[85px] h-[85px] bg-[#2D0B5A] rounded-2xl flex items-center justify-center overflow-hidden border border-white/10 shadow-lg group-hover:border-yellow-400">
                 <img 
-                  src={game.image} 
+                  src={game.img} 
                   alt={game.name} 
                   className="w-full h-full object-cover"
-                  onError={(e) => { e.target.onerror = null; e.target.src="https://via.placeholder.com/90?text=Game"; }} 
+                  onError={(e) => { e.target.src = 'https://placehold.co/100x100?text=Game' }} 
                 />
               </div>
-              
-              {/* Game Name */}
-              <p className="text-white text-[11px] font-bold mt-2 text-center leading-tight max-w-[90px] truncate">
+              <p className="text-white text-[11px] font-medium mt-1.5 text-center leading-tight">
                 {game.name}
               </p>
             </div>
