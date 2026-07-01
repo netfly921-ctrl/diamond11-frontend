@@ -12,6 +12,7 @@ const Home = () => {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [banners] = useState([
     { id: 1, text: 'RECHARGE BONUS 100%', sub: 'Deposit now and get double!', color: 'from-pink-500 via-red-500 to-yellow-500', emoji: '🎁' },
@@ -22,7 +23,7 @@ const Home = () => {
   const [currentBanner, setCurrentBanner] = useState(0);
 
   useEffect(() => {
-    loadGames(); // Folder structure ke hisaab se games load kar rahe hain
+    fetchGames();
     fetchBalance();
     const balanceInterval = setInterval(fetchBalance, 15000);
     const bannerInterval = setInterval(() => {
@@ -34,27 +35,26 @@ const Home = () => {
     };
   }, []);
 
-  // ✅ EXACT FOLDER STRUCTURE KE HISAAB SE LIST
-  const loadGames = () => {
-    const gameList = [
-      { id: '1', name: 'Aviator', path: '/games/aviator/', image: '/game-images/aviator.png' },
-      { id: '2', name: 'Wingo', path: '/games/wingo/', image: '/game-images/wingo.png' },
-      { id: '3', name: 'Coin Flip', path: '/games/coinflip/', image: '/game-images/coinflip.png' },
-      { id: '4', name: 'Andar Bahar', path: '/games/andarbahar/', image: '/game-images/andarbahar.png' },
-      { id: '5', name: 'Dragon Tiger', path: '/games/dragontiger/', image: '/game-images/dragontiger.png' },
-      { id: '6', name: 'Color Prediction', path: '/games/colorprediction/', image: '/game-images/colorprediction.png' },
-      { id: '7', name: 'Teen Patti', path: '/games/teenpatti/', image: '/game-images/teenpatti.png' },
-      { id: '8', name: 'Mines', path: '/games/mines/', image: '/game-images/mines.png' },
-      { id: '9', name: 'Plinko', path: '/games/plinko/', image: '/game-images/plinko.png' },
-      { id: '10', name: 'Roulette', path: '/games/roulette/', image: '/game-images/roulette.png' },
-      { id: '11', name: 'Wheel', path: '/games/wheel/', image: '/game-images/wheel.png' },
-      { id: '12', name: 'Dice', path: '/games/dice/', image: '/game-images/dice.png' },
-      // Jinke images nahi hain unke liye default '01.png' use kiya hai
-      { id: '13', name: 'Chicken Pro', path: '/games/CHICKEN PRO/', image: '/game-images/01.png' },
-      { id: '14', name: 'Hilo', path: '/games/hilo/', image: '/game-images/01.png' },
-      { id: '15', name: 'Limbo', path: '/games/limbo/', image: '/game-images/01.png' },
-    ];
-    setGames(gameList);
+  // ✅ MONGODB SE FETCH KARO
+  const fetchGames = async () => {
+    try {
+      console.log('Fetching games from:', `${API_URL}/api/game/list`);
+      const res = await axios.get(`${API_URL}/api/game/list`);
+      
+      if (res.data.success && res.data.data) {
+        console.log('Games received:', res.data.data);
+        setGames(res.data.data);
+      } else {
+        console.log('No games data received');
+        setGames([]);
+      }
+    } catch (error) {
+      console.error('Error fetching games:', error);
+      // Fallback agar API fail ho
+      setGames([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchBalance = async () => {
@@ -116,36 +116,69 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Games Grid */}
+      {/* GAMES SECTION */}
       <div className="px-4 pb-10">
         <h3 className="text-white font-bold text-base mb-4 flex items-center gap-2">
-          <span className="w-1 h-5 bg-yellow-400 rounded-full"></span> 🎮 All Games
+          <span className="w-1 h-5 bg-yellow-400 rounded-full"></span> 🎮 All Games ({games.length})
         </h3>
 
-        <div className="grid grid-cols-3 gap-y-5 gap-x-3">
-          {games.map((game) => (
-            <div
-              key={game.id}
-              onClick={() => window.location.href = game.path}
-              className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group"
+        {loading ? (
+          <div className="text-center text-purple-300 py-12">
+            <div className="text-5xl mb-3 animate-bounce">⏳</div>
+            <p>Loading Games...</p>
+          </div>
+        ) : games.length === 0 ? (
+          <div className="text-center text-purple-300 py-12">
+            <div className="text-5xl mb-3">😢</div>
+            <p>No Games Available</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 bg-yellow-400 text-purple-900 px-4 py-2 rounded-full text-sm font-bold"
             >
-              {/* Game Icon Box with Real Image */}
-              <div className="w-[90px] h-[90px] bg-white rounded-2xl flex items-center justify-center border-2 border-white/20 shadow-lg overflow-hidden group-hover:border-yellow-300 group-hover:scale-105 transition-all duration-200">
-                <img 
-                  src={game.image} 
-                  alt={game.name} 
-                  className="w-full h-full object-cover"
-                  onError={(e) => { e.target.onerror = null; e.target.src="https://via.placeholder.com/90?text=Game"; }} 
-                />
+              Retry Loading
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-y-5 gap-x-3">
+            {games.map((game) => (
+              <div
+                key={game._id}
+                onClick={() => {
+                  // ✅ YEH SAHI URL USE KAREGA
+                  const url = game.gameUrl || `/games/${game.code || game.name?.toLowerCase()}/index.html`;
+                  console.log('Opening game:', url);
+                  window.location.href = url;
+                }}
+                className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group"
+              >
+                {/* Game Icon Box */}
+                <div className="w-[90px] h-[90px] bg-white rounded-2xl flex items-center justify-center border-2 border-white/20 shadow-lg overflow-hidden group-hover:border-yellow-300 group-hover:scale-105 transition-all duration-200">
+                  <img 
+                    src={game.image || `/game-images/${game.code || game.name?.toLowerCase()}.png`} 
+                    alt={game.name} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Agar image fail ho toh gradient box dikhao
+                      e.target.onerror = null;
+                      e.target.style.display = 'none';
+                      e.target.parentElement.classList.add('bg-gradient-to-br', 'from-purple-500', 'to-pink-500');
+                      // Emoji fallback
+                      const span = document.createElement('span');
+                      span.innerText = '🎮';
+                      span.className = 'text-4xl';
+                      e.target.parentElement.appendChild(span);
+                    }}
+                  />
+                </div>
+
+                {/* Game Name */}
+                <p className="text-white text-[11px] font-bold mt-2 text-center leading-tight max-w-[90px] truncate">
+                  {game.name}
+                </p>
               </div>
-              
-              {/* Game Name */}
-              <p className="text-white text-[11px] font-bold mt-2 text-center leading-tight max-w-[90px] truncate">
-                {game.name}
-              </p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <BottomNav activeTab="home" />
