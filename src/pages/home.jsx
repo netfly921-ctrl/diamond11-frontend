@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import BottomNav from '../components/BottomNav';
 import Header from '../components/Header';
@@ -9,26 +8,44 @@ import { FaSyncAlt } from 'react-icons/fa';
 const API_URL = 'https://diamond11-backend.onrender.com';
 
 const Home = () => {
-  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
+
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const updateUser = (newUser) => {
+    setUser(newUser);
+    localStorage.setItem('user', JSON.stringify(newUser));
+  };
+
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
   const [banners] = useState([
     { id: 1, text: 'RECHARGE BONUS 100%', sub: 'Deposit now and get double!', color: 'from-pink-500 via-red-500 to-yellow-500', emoji: '🎁' },
     { id: 2, text: 'DAILY BONUS ₹500', sub: 'Login daily and claim!', color: 'from-blue-500 via-purple-500 to-pink-500', emoji: '💰' },
     { id: 3, text: 'REFER & EARN ₹50', sub: 'Invite friends and earn!', color: 'from-green-400 via-teal-500 to-blue-500', emoji: '👥' },
     { id: 4, text: 'VIP REWARDS', sub: 'Level up for better rewards!', color: 'from-yellow-400 via-orange-500 to-red-500', emoji: '👑' }
   ]);
+
   const [currentBanner, setCurrentBanner] = useState(0);
 
   useEffect(() => {
     fetchGames();
     fetchBalance();
+
     const balanceInterval = setInterval(fetchBalance, 15000);
     const bannerInterval = setInterval(() => {
       setCurrentBanner(prev => (prev + 1) % banners.length);
     }, 3000);
+
     return () => {
       clearInterval(balanceInterval);
       clearInterval(bannerInterval);
@@ -57,6 +74,7 @@ const Home = () => {
       const res = await axios.get(`${API_URL}/api/wallet/balance`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
+
       if (res.data.success) {
         updateUser({ ...user, balance: res.data.data.balance });
       }
@@ -118,10 +136,11 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Games Grid */}
+      {/* Games Section */}
       <div className="px-4 pb-10">
         <h3 className="text-white font-bold text-base mb-4 flex items-center gap-2">
-          <span className="w-1 h-5 bg-yellow-400 rounded-full"></span> 🎮 All Games ({games.length})
+          <span className="w-1 h-5 bg-yellow-400 rounded-full"></span>
+          🎮 All Games ({games.length})
         </h3>
 
         {loading ? (
@@ -152,7 +171,9 @@ const Home = () => {
                       src={imageUrl}
                       alt={game.displayName || game.name}
                       className="w-full h-full object-cover"
-                      onError={(e) => { e.currentTarget.src = '/game-images/01.png'; }}
+                      onError={(e) => {
+                        e.currentTarget.src = '/game-images/01.png';
+                      }}
                     />
                   </div>
                   <p className="text-white text-[11px] font-bold mt-2 text-center leading-tight max-w-[90px] truncate">
