@@ -36,16 +36,17 @@ import AdminGames from './pages/admin/games';
 import AdminFinance from './pages/admin/finance';
 import AdminReferrals from './pages/admin/referrals';
 
-// Protected Route for Normal Users
+// ✅ Token-based Protected Route (simple, no loading issues)
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/login" />;
+  return token ? children : <Navigate to="/login" replace />;
 };
 
-// Protected Route for Admin
+// ✅ Admin Protected Route
 const AdminProtectedRoute = ({ children }) => {
+  const adminToken = localStorage.getItem('adminToken');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  return user?.role === 'admin' ? children : <Navigate to="/admin/login" />;
+  return (adminToken || user?.role === 'admin') ? children : <Navigate to="/admin/login" replace />;
 };
 
 function App() {
@@ -53,29 +54,14 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* ===================== PUBLIC ROUTES ===================== */}
+          {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/admin/login" element={<AdminLogin />} />
 
-          {/* ===================== USER ROUTES ===================== */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/home"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-
+          {/* User Protected Routes */}
+          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/activity" element={<ProtectedRoute><Activity /></ProtectedRoute>} />
           <Route path="/promotion" element={<ProtectedRoute><Promotion /></ProtectedRoute>} />
           <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
@@ -96,26 +82,17 @@ function App() {
           <Route path="/vip" element={<ProtectedRoute><VIP /></ProtectedRoute>} />
           <Route path="/gift-code" element={<ProtectedRoute><GiftCode /></ProtectedRoute>} />
 
-          {/* ===================== ADMIN ROUTES ===================== */}
-          <Route
-            path="/admin/*"
-            element={
-              <AdminProtectedRoute>
-                <Routes>
-                  <Route path="dashboard" element={<AdminDashboard />} />
-                  <Route path="deposits" element={<AdminDeposits />} />
-                  <Route path="withdrawals" element={<AdminWithdrawals />} />
-                  <Route path="settings" element={<AdminSettings />} />
-                  <Route path="games" element={<AdminGames />} />
-                  <Route path="finance" element={<AdminFinance />} />
-                  <Route path="referrals" element={<AdminReferrals />} />
-                </Routes>
-              </AdminProtectedRoute>
-            }
-          />
+          {/* Admin Protected Routes */}
+          <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+          <Route path="/admin/deposits" element={<AdminProtectedRoute><AdminDeposits /></AdminProtectedRoute>} />
+          <Route path="/admin/withdrawals" element={<AdminProtectedRoute><AdminWithdrawals /></AdminProtectedRoute>} />
+          <Route path="/admin/settings" element={<AdminProtectedRoute><AdminSettings /></AdminProtectedRoute>} />
+          <Route path="/admin/games" element={<AdminProtectedRoute><AdminGames /></AdminProtectedRoute>} />
+          <Route path="/admin/finance" element={<AdminProtectedRoute><AdminFinance /></AdminProtectedRoute>} />
+          <Route path="/admin/referrals" element={<AdminProtectedRoute><AdminReferrals /></AdminProtectedRoute>} />
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/login" />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </AuthProvider>
