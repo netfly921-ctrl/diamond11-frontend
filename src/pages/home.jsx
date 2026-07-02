@@ -1,27 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import BottomNav from '../components/BottomNav';
-import Header from '../components/Header';
-import { FaSyncAlt } from 'react-icons/fa';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import BottomNav from "../components/BottomNav";
+import Header from "../components/Header";
+import { FaSyncAlt } from "react-icons/fa";
 
-const API_URL = 'https://diamond11-backend.onrender.com';
+const API_URL = "https://diamond11-backend.onrender.com";
+
+function getPlayUrl(game) {
+  // Prefer gameUrl, else path
+  let url = game.gameUrl || game.path || "";
+
+  // If url is empty, build from code
+  if (!url) {
+    url = `/games/${game.code}/index.html`;
+  }
+
+  // If it's already html, keep
+  if (url.endsWith(".html")) return encodeURI(url);
+
+  // If it's a folder path like /games/aviator/ => add index.html
+  if (!url.endsWith("/")) url += "/";
+  url += "index.html";
+
+  return encodeURI(url);
+}
+
+function getImageUrl(game) {
+  // Backend image field empty hai, isliye fallback game-images/{code}.png
+  if (game.image && game.image.trim() !== "") return game.image;
+  if (game.code) return `/game-images/${game.code}.png`;
+  return `/game-images/01.png`;
+}
 
 const Home = () => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(() => {
     try {
-      const savedUser = localStorage.getItem('user');
-      return savedUser ? JSON.parse(savedUser) : {};
+      const s = localStorage.getItem("user");
+      return s ? JSON.parse(s) : {};
     } catch {
       return {};
     }
   });
 
-  const updateUser = (newUser) => {
-    setUser(newUser);
-    localStorage.setItem('user', JSON.stringify(newUser));
+  const updateUser = (u) => {
+    setUser(u);
+    localStorage.setItem("user", JSON.stringify(u));
   };
 
   const [games, setGames] = useState([]);
@@ -29,10 +55,10 @@ const Home = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const [banners] = useState([
-    { id: 1, text: 'RECHARGE BONUS 100%', sub: 'Deposit now and get double!', color: 'from-pink-500 via-red-500 to-yellow-500', emoji: '🎁' },
-    { id: 2, text: 'DAILY BONUS ₹500', sub: 'Login daily and claim!', color: 'from-blue-500 via-purple-500 to-pink-500', emoji: '💰' },
-    { id: 3, text: 'REFER & EARN ₹50', sub: 'Invite friends and earn!', color: 'from-green-400 via-teal-500 to-blue-500', emoji: '👥' },
-    { id: 4, text: 'VIP REWARDS', sub: 'Level up for better rewards!', color: 'from-yellow-400 via-orange-500 to-red-500', emoji: '👑' }
+    { id: 1, text: "RECHARGE BONUS 100%", sub: "Deposit now and get double!", color: "from-pink-500 via-red-500 to-yellow-500", emoji: "🎁" },
+    { id: 2, text: "DAILY BONUS ₹500", sub: "Login daily and claim!", color: "from-blue-500 via-purple-500 to-pink-500", emoji: "💰" },
+    { id: 3, text: "REFER & EARN ₹50", sub: "Invite friends and earn!", color: "from-green-400 via-teal-500 to-blue-500", emoji: "👥" },
+    { id: 4, text: "VIP REWARDS", sub: "Level up for better rewards!", color: "from-yellow-400 via-orange-500 to-red-500", emoji: "👑" }
   ]);
 
   const [currentBanner, setCurrentBanner] = useState(0);
@@ -43,25 +69,26 @@ const Home = () => {
 
     const balanceInterval = setInterval(fetchBalance, 15000);
     const bannerInterval = setInterval(() => {
-      setCurrentBanner(prev => (prev + 1) % banners.length);
+      setCurrentBanner((prev) => (prev + 1) % banners.length);
     }, 3000);
 
     return () => {
       clearInterval(balanceInterval);
       clearInterval(bannerInterval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchGames = async () => {
     try {
       const res = await axios.get(`${API_URL}/api/game/list`);
-      if (res.data.success) {
+      if (res.data?.success) {
         setGames(res.data.data || []);
       } else {
         setGames([]);
       }
-    } catch (error) {
-      console.error('Error fetching games:', error);
+    } catch (e) {
+      console.error("fetchGames error:", e);
       setGames([]);
     } finally {
       setLoading(false);
@@ -70,15 +97,14 @@ const Home = () => {
 
   const fetchBalance = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API_URL}/api/wallet/balance`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
-
-      if (res.data.success) {
+      // token optional (agar auth required ho to bhejna)
+      const res = await axios.get(`${API_URL}/api/wallet/balance`);
+      if (res.data?.success) {
         updateUser({ ...user, balance: res.data.data.balance });
       }
-    } catch (error) {}
+    } catch (e) {
+      // ignore
+    }
   };
 
   const handleManualRefresh = async () => {
@@ -87,60 +113,81 @@ const Home = () => {
     setTimeout(() => setRefreshing(false), 800);
   };
 
-  const openGame = (game) => {
-    const playUrl = game.gameUrl || game.path || `/games/${game.code}/index.html`;
-    window.location.href = playUrl;
-  };
-
   return (
     <div className="pb-20 min-h-screen bg-[#4A0E8F]">
       <Header />
 
-      {/* Banner Slider */}
+      {/* Banner */}
       <div className="px-3 mt-3">
-        <div className={`bg-gradient-to-r ${banners[currentBanner].color} rounded-2xl shadow-xl overflow-hidden`} style={{ minHeight: '140px' }}>
+        <div
+          className={`bg-gradient-to-r ${banners[currentBanner].color} rounded-2xl shadow-xl overflow-hidden`}
+          style={{ minHeight: "140px" }}
+        >
           <div className="flex items-center justify-between h-full p-5">
             <div className="flex-1">
-              <p className="text-white text-[10px] font-bold opacity-80 mb-1 uppercase tracking-wider">💎 DIAMOND 11</p>
-              <h2 className="text-white text-xl font-black leading-tight mb-1">{banners[currentBanner].text}</h2>
-              <p className="text-white/80 text-xs mb-3">{banners[currentBanner].sub}</p>
-              <button onClick={() => navigate('/wallet')} className="bg-white text-purple-800 px-4 py-1.5 rounded-full text-xs font-black shadow-lg hover:scale-105 transition-transform">
+              <p className="text-white text-[10px] font-bold opacity-80 mb-1 uppercase tracking-wider">
+                💎 DIAMOND 11
+              </p>
+              <h2 className="text-white text-xl font-black leading-tight mb-1">
+                {banners[currentBanner].text}
+              </h2>
+              <p className="text-white/80 text-xs mb-3">
+                {banners[currentBanner].sub}
+              </p>
+              <button
+                onClick={() => navigate("/wallet")}
+                className="bg-white text-purple-800 px-4 py-1.5 rounded-full text-xs font-black shadow-lg hover:scale-105 transition-transform"
+              >
                 Play Now →
               </button>
             </div>
             <div className="text-6xl ml-2 drop-shadow-lg">{banners[currentBanner].emoji}</div>
           </div>
         </div>
+
         <div className="flex justify-center gap-1.5 mt-2 mb-3">
           {banners.map((_, idx) => (
-            <button key={idx} onClick={() => setCurrentBanner(idx)} className={`rounded-full transition-all ${idx === currentBanner ? 'bg-yellow-400 w-4 h-1.5' : 'bg-purple-500 w-1.5 h-1.5'}`} />
+            <button
+              key={idx}
+              onClick={() => setCurrentBanner(idx)}
+              className={`rounded-full transition-all ${
+                idx === currentBanner ? "bg-yellow-400 w-4 h-1.5" : "bg-purple-500 w-1.5 h-1.5"
+              }`}
+            />
           ))}
         </div>
       </div>
 
-      {/* Balance Card */}
+      {/* Balance */}
       <div className="px-3 mb-4">
         <div className="bg-[#5B21B6] rounded-xl p-3.5 flex items-center justify-between border border-white/10 shadow-lg">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/wallet')}>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/wallet")}>
             <div className="w-11 h-11 bg-gradient-to-tr from-yellow-300 to-orange-500 rounded-full flex items-center justify-center text-purple-900 font-black text-lg shadow-inner">
-              {user?.uid?.charAt(0) || 'U'}
+              {user?.uid?.charAt(0) || "U"}
             </div>
             <div>
-              <p className="text-purple-300 text-[10px] font-medium">ID: {user?.uid || 'N/A'}</p>
-              <p className="text-white font-black text-xl">₹{(user?.balance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+              <p className="text-purple-300 text-[10px] font-medium">ID: {user?.uid || "N/A"}</p>
+              <p className="text-white font-black text-xl">
+                ₹{(user?.balance || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+              </p>
             </div>
           </div>
-          <button onClick={handleManualRefresh} className={`bg-white/10 p-2.5 rounded-full text-white hover:bg-white/20 transition-colors ${refreshing ? 'animate-spin' : ''}`}>
+
+          <button
+            onClick={handleManualRefresh}
+            className={`bg-white/10 p-2.5 rounded-full text-white hover:bg-white/20 transition-colors ${
+              refreshing ? "animate-spin" : ""
+            }`}
+          >
             <FaSyncAlt className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Games Section */}
+      {/* Games */}
       <div className="px-4 pb-10">
         <h3 className="text-white font-bold text-base mb-4 flex items-center gap-2">
-          <span className="w-1 h-5 bg-yellow-400 rounded-full"></span>
-          🎮 All Games ({games.length})
+          <span className="w-1 h-5 bg-yellow-400 rounded-full"></span> 🎮 All Games ({games.length})
         </h3>
 
         {loading ? (
@@ -152,30 +199,40 @@ const Home = () => {
           <div className="text-center text-purple-300 py-12">
             <div className="text-5xl mb-3">😢</div>
             <p>No Games Available</p>
-            <button onClick={fetchGames} className="mt-4 bg-yellow-400 text-purple-900 px-4 py-2 rounded-full text-sm font-bold">
+            <button
+              onClick={fetchGames}
+              className="mt-4 bg-yellow-400 text-purple-900 px-4 py-2 rounded-full text-sm font-bold"
+            >
               Retry
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-y-5 gap-x-3">
             {games.map((game) => {
-              const imageUrl = game.image || `/game-images/${game.code}.png`;
+              const img = getImageUrl(game);
+              const playUrl = getPlayUrl(game);
+
               return (
                 <div
                   key={game._id || game.code}
-                  onClick={() => openGame(game)}
+                  onClick={() => {
+                    console.log("open:", playUrl);
+                    window.location.href = playUrl;
+                  }}
                   className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group"
                 >
-                  <div className="w-[90px] h-[90px] bg-[#2D0B5A] rounded-2xl flex items-center justify-center border border-white/10 shadow-lg overflow-hidden group-hover:border-yellow-400 group-hover:scale-105 transition-all duration-200">
+                  <div className="w-[90px] h-[90px] bg-white rounded-2xl flex items-center justify-center border border-white/10 shadow-lg overflow-hidden group-hover:border-yellow-400 group-hover:scale-105 transition-all duration-200">
                     <img
-                      src={imageUrl}
+                      src={img}
                       alt={game.displayName || game.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.currentTarget.src = '/game-images/01.png';
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "/game-images/01.png";
                       }}
                     />
                   </div>
+
                   <p className="text-white text-[11px] font-bold mt-2 text-center leading-tight max-w-[90px] truncate">
                     {game.displayName || game.name}
                   </p>
