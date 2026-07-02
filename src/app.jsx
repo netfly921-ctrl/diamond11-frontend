@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/authcontext';
+import { AuthProvider } from './context/authcontext';
 
 // User Pages
 import Login from './pages/login';
@@ -36,25 +37,16 @@ import AdminGames from './pages/admin/games';
 import AdminFinance from './pages/admin/finance';
 import AdminReferrals from './pages/admin/referrals';
 
-// User Protected Route
+// Protected Route for Normal Users
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="flex items-center justify-center h-screen text-white">Loading...</div>;
-  if (!user) return <Navigate to="/login" />;
-  return children;
+  const token = localStorage.getItem('token');
+  return token ? children : <Navigate to="/login" />;
 };
 
-// Admin Protected Route
+// Protected Route for Admin
 const AdminProtectedRoute = ({ children }) => {
-  const { admin, loading } = useAuth();
-  if (loading) return <div className="flex items-center justify-center h-screen text-white">Loading...</div>;
-  if (!admin) return <Navigate to="/admin/login" />;
-  return children;
-};
-
-const AdminRoute = ({ children }) => {
-  const user = JSON.parse(localStorage.getItem('user'));
-  return user?.role === 'admin' ? children : <Navigate to="/login" />;
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  return user?.role === 'admin' ? children : <Navigate to="/admin/login" />;
 };
 
 function App() {
@@ -62,8 +54,50 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Admin Routes */}
+          {/* ===================== PUBLIC ROUTES ===================== */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/admin/login" element={<AdminLogin />} />
+
+          {/* ===================== USER ROUTES ===================== */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="/activity" element={<ProtectedRoute><Activity /></ProtectedRoute>} />
+          <Route path="/promotion" element={<ProtectedRoute><Promotion /></ProtectedRoute>} />
+          <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+          <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+          <Route path="/game/:gameCode" element={<ProtectedRoute><GamePage /></ProtectedRoute>} />
+          <Route path="/deposit" element={<ProtectedRoute><Deposit /></ProtectedRoute>} />
+          <Route path="/withdraw" element={<ProtectedRoute><Withdraw /></ProtectedRoute>} />
+          <Route path="/transactions" element={<ProtectedRoute><TransactionHistory /></ProtectedRoute>} />
+          <Route path="/coupon" element={<ProtectedRoute><Coupon /></ProtectedRoute>} />
+          <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+          <Route path="/daily-bonus" element={<ProtectedRoute><DailyBonus /></ProtectedRoute>} />
+          <Route path="/lucky-spin" element={<ProtectedRoute><LuckySpin /></ProtectedRoute>} />
+          <Route path="/cashback" element={<ProtectedRoute><Cashback /></ProtectedRoute>} />
+          <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
+          <Route path="/jackpot" element={<ProtectedRoute><Jackpot /></ProtectedRoute>} />
+          <Route path="/mail" element={<ProtectedRoute><Mail /></ProtectedRoute>} />
+          <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
+          <Route path="/vip" element={<ProtectedRoute><VIP /></ProtectedRoute>} />
+          <Route path="/gift-code" element={<ProtectedRoute><GiftCode /></ProtectedRoute>} />
+
+          {/* ===================== ADMIN ROUTES ===================== */}
           <Route
             path="/admin/*"
             element={
@@ -81,42 +115,8 @@ function App() {
             }
           />
 
-          {/* User Routes */}
-          <Route
-            path="/*"
-            element={
-              <div className="app-container">
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-
-                  <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-                  <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-                  <Route path="/activity" element={<ProtectedRoute><Activity /></ProtectedRoute>} />
-                  <Route path="/promotion" element={<ProtectedRoute><Promotion /></ProtectedRoute>} />
-                  <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
-                  <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-                  <Route path="/game/:gameCode" element={<ProtectedRoute><GamePage /></ProtectedRoute>} />
-                  <Route path="/deposit" element={<ProtectedRoute><Deposit /></ProtectedRoute>} />
-                  <Route path="/withdraw" element={<ProtectedRoute><Withdraw /></ProtectedRoute>} />
-                  <Route path="/transactions" element={<ProtectedRoute><TransactionHistory /></ProtectedRoute>} />
-                  <Route path="/coupon" element={<ProtectedRoute><Coupon /></ProtectedRoute>} />
-                  <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-                  <Route path="/daily-bonus" element={<ProtectedRoute><DailyBonus /></ProtectedRoute>} />
-                  <Route path="/lucky-spin" element={<ProtectedRoute><LuckySpin /></ProtectedRoute>} />
-                  <Route path="/cashback" element={<ProtectedRoute><Cashback /></ProtectedRoute>} />
-                  <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
-                  <Route path="/jackpot" element={<ProtectedRoute><Jackpot /></ProtectedRoute>} />
-                  <Route path="/mail" element={<ProtectedRoute><Mail /></ProtectedRoute>} />
-                  <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
-                  <Route path="/vip" element={<ProtectedRoute><VIP /></ProtectedRoute>} />
-                  <Route path="/gift-code" element={<ProtectedRoute><GiftCode /></ProtectedRoute>} />
-
-                  <Route path="*" element={<Navigate to="/" />} />
-                </Routes>
-              </div>
-            }
-          />
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </Router>
     </AuthProvider>
