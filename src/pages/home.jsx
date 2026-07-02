@@ -5,12 +5,25 @@ import { FaSyncAlt, FaHome, FaGift, FaWallet, FaUser } from "react-icons/fa";
 
 const API_URL = "https://diamond11-backend.onrender.com";
 
+// ✅ SMART URL GENERATOR (Case sensitivity fix)
 function getPlayUrl(game) {
-  let url = game.gameUrl || game.path || "";
-  if (!url) url = `/games/${game.code}/index.html`;
+  let code = game.code ? game.code.toLowerCase() : "";
+  
+  // Special case for CHICKEN PRO (space wala folder)
+  if (code === "chickenpro") code = "CHICKEN PRO";
+
+  // Agar MongoDB mein gameUrl hai toh use karo, warna code se banao
+  let url = game.gameUrl || game.path || `/games/${code}/index.html`;
+  
+  // Ensure URL lowercase hai (except CHICKEN PRO)
+  if (code !== "CHICKEN PRO") {
+    url = url.toLowerCase();
+  }
+
   if (url.endsWith(".html")) return encodeURI(url);
   if (!url.endsWith("/")) url += "/";
   url += "index.html";
+  
   return encodeURI(url);
 }
 
@@ -79,7 +92,6 @@ const Home = () => {
     }
   };
 
-  // ✅ Token ke saath balance fetch (ID aur Balance dikhega)
   const fetchBalance = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -103,8 +115,6 @@ const Home = () => {
 
   return (
     <div className="pb-24 min-h-screen bg-[#4A0E8F]">
-
-      {/* Header */}
       <div className="bg-[#3b0b72] p-4 flex justify-between items-center shadow-md">
         <h1 className="text-white font-black text-xl tracking-wider">DIAMOND 11</h1>
         <div className="flex gap-3 items-center">
@@ -113,7 +123,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Banner */}
       <div className="px-3 mt-4">
         <div className={`bg-gradient-to-r ${banners[currentBanner].color} rounded-2xl shadow-xl overflow-hidden`} style={{ minHeight: "140px" }}>
           <div className="flex items-center justify-between h-full p-5">
@@ -135,7 +144,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Balance */}
       <div className="px-3 mb-4">
         <div className="bg-[#5B21B6] rounded-xl p-3.5 flex items-center justify-between shadow-lg border border-white/10">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/wallet")}>
@@ -153,7 +161,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Games */}
       <div className="px-4 pb-10">
         <h3 className="text-white font-bold text-base mb-4 flex items-center gap-2">
           <span className="w-1 h-5 bg-yellow-400 rounded-full"></span> 🎮 All Games ({games.length})
@@ -188,7 +195,6 @@ const Home = () => {
         )}
       </div>
 
-      {/* ✅ WORKING Bottom Nav - Ab har button navigate karega */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#3b0b72] border-t border-purple-800 flex justify-around p-3 z-50">
         <button onClick={() => navigate("/home")} className="flex flex-col items-center text-yellow-400">
           <FaHome className="text-xl" />
@@ -207,7 +213,6 @@ const Home = () => {
           <span className="text-[10px] mt-1">Account</span>
         </button>
       </div>
-
     </div>
   );
 };
