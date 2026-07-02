@@ -79,9 +79,16 @@ const Home = () => {
     }
   };
 
+  // ✅ Token ke saath balance fetch (ID aur Balance dikhega)
   const fetchBalance = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/wallet/balance`);
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await axios.get(`${API_URL}/api/wallet/balance`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
       if (res.data?.success) {
         updateUser({ ...user, balance: res.data.data.balance });
       }
@@ -95,14 +102,14 @@ const Home = () => {
   };
 
   return (
-    <div className="pb-20 min-h-screen bg-[#4A0E8F]">
-      
-      {/* Inline Header (Error bachane ke liye) */}
+    <div className="pb-24 min-h-screen bg-[#4A0E8F]">
+
+      {/* Header */}
       <div className="bg-[#3b0b72] p-4 flex justify-between items-center shadow-md">
         <h1 className="text-white font-black text-xl tracking-wider">DIAMOND 11</h1>
-        <div className="flex gap-3">
-          <span className="text-xl">🇺🇸</span>
-          <span className="text-white text-xl">🔔</span>
+        <div className="flex gap-3 items-center">
+          <span className="text-xl">🇮🇳</span>
+          <button onClick={() => navigate("/notifications")} className="text-white text-xl">🔔</button>
         </div>
       </div>
 
@@ -121,11 +128,16 @@ const Home = () => {
             <div className="text-6xl ml-2 drop-shadow-lg">{banners[currentBanner].emoji}</div>
           </div>
         </div>
+        <div className="flex justify-center gap-1.5 mt-2 mb-3">
+          {banners.map((_, idx) => (
+            <button key={idx} onClick={() => setCurrentBanner(idx)} className={`rounded-full transition-all ${idx === currentBanner ? "bg-yellow-400 w-4 h-1.5" : "bg-purple-500 w-1.5 h-1.5"}`} />
+          ))}
+        </div>
       </div>
 
       {/* Balance */}
-      <div className="px-3 mb-4 mt-4">
-        <div className="bg-[#5B21B6] rounded-xl p-3.5 flex items-center justify-between shadow-lg">
+      <div className="px-3 mb-4">
+        <div className="bg-[#5B21B6] rounded-xl p-3.5 flex items-center justify-between shadow-lg border border-white/10">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/wallet")}>
             <div className="w-11 h-11 bg-gradient-to-tr from-yellow-300 to-orange-500 rounded-full flex items-center justify-center text-purple-900 font-black text-lg">
               {user?.uid?.charAt(0) || "U"}
@@ -155,6 +167,7 @@ const Home = () => {
         ) : games.length === 0 ? (
           <div className="text-center text-purple-300 py-12">
             <p>No Games Available</p>
+            <button onClick={fetchGames} className="mt-4 bg-yellow-400 text-purple-900 px-4 py-2 rounded-full text-sm font-bold">Retry</button>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-y-5 gap-x-3">
@@ -164,7 +177,7 @@ const Home = () => {
 
               return (
                 <div key={game._id || game.code} onClick={() => { window.location.href = playUrl; }} className="flex flex-col items-center cursor-pointer active:scale-95 group">
-                  <div className="w-[90px] h-[90px] bg-white rounded-2xl flex items-center justify-center shadow-lg overflow-hidden border border-white/20">
+                  <div className="w-[90px] h-[90px] bg-white rounded-2xl flex items-center justify-center shadow-lg overflow-hidden border border-white/20 group-hover:border-yellow-400">
                     <img src={img} alt={game.name} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/game-images/01.png"; }} />
                   </div>
                   <p className="text-white text-[11px] font-bold mt-2 text-center leading-tight max-w-[90px] truncate">{game.displayName || game.name}</p>
@@ -175,12 +188,24 @@ const Home = () => {
         )}
       </div>
 
-      {/* Inline Bottom Nav (Error bachane ke liye) */}
-      <div className="fixed bottom-0 w-full max-w-md bg-[#3b0b72] border-t border-purple-800 flex justify-around p-3 z-50">
-        <button className="flex flex-col items-center text-yellow-400"><FaHome className="text-xl" /><span className="text-[10px] mt-1">Home</span></button>
-        <button className="flex flex-col items-center text-purple-300"><FaGift className="text-xl" /><span className="text-[10px] mt-1">Activity</span></button>
-        <button className="flex flex-col items-center text-purple-300"><FaWallet className="text-xl" /><span className="text-[10px] mt-1">Wallet</span></button>
-        <button className="flex flex-col items-center text-purple-300"><FaUser className="text-xl" /><span className="text-[10px] mt-1">Account</span></button>
+      {/* ✅ WORKING Bottom Nav - Ab har button navigate karega */}
+      <div className="fixed bottom-0 left-0 right-0 bg-[#3b0b72] border-t border-purple-800 flex justify-around p-3 z-50">
+        <button onClick={() => navigate("/home")} className="flex flex-col items-center text-yellow-400">
+          <FaHome className="text-xl" />
+          <span className="text-[10px] mt-1">Home</span>
+        </button>
+        <button onClick={() => navigate("/activity")} className="flex flex-col items-center text-purple-300 hover:text-yellow-400">
+          <FaGift className="text-xl" />
+          <span className="text-[10px] mt-1">Activity</span>
+        </button>
+        <button onClick={() => navigate("/wallet")} className="flex flex-col items-center text-purple-300 hover:text-yellow-400">
+          <FaWallet className="text-xl" />
+          <span className="text-[10px] mt-1">Wallet</span>
+        </button>
+        <button onClick={() => navigate("/account")} className="flex flex-col items-center text-purple-300 hover:text-yellow-400">
+          <FaUser className="text-xl" />
+          <span className="text-[10px] mt-1">Account</span>
+        </button>
       </div>
 
     </div>
