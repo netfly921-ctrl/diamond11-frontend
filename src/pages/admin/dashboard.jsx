@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useAuth } from '../../context/authcontext';
 import { FaUsers, FaGamepad, FaWallet, FaCog, FaSignOutAlt, FaChartBar, FaUserCog, FaMoneyBillWave, FaList, FaPlus, FaMinus, FaCheck, FaTimes, FaChartLine, FaGift } from 'react-icons/fa';
 
-// Fixed Imports with './'
 import AdminDeposits from './deposits';
 import AdminWithdrawals from './withdrawals';
 import AdminSettings from './settings';
@@ -14,7 +13,24 @@ import AdminFeatures from './features';
 import AdminGiftCodes from './giftcodes';
 import GameControl from './gamecontrol';
 
-const API_URL = 'https://diamond11-backend.onrender.com/admin';
+const API_URL = 'https://diamond11-backend.onrender.com/api/admin';
+
+// ✅ CRITICAL FIX: Axios ke liye helper function
+const getAuthConfig = () => {
+  const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
+  return {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  };
+};
+
+// ✅ CRITICAL: Axios global default set karo
+const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
+if (token) {
+  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+}
 
 const AdminSidebar = ({ activeTab, setActiveTab }) => {
   const { adminLogout } = useAuth();
@@ -32,6 +48,15 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
     { name: 'Gift Codes', icon: FaGift },
     { name: 'Game Control', icon: FaGamepad },
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('admin');
+    delete axios.defaults.headers.common['Authorization'];
+    if (adminLogout) adminLogout();
+    window.location.href = '/admin/login';
+  };
 
   return (
     <div className="w-64 bg-gray-900 text-white flex flex-col h-screen fixed left-0 top-0">
@@ -55,7 +80,7 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       </nav>
       <div className="p-4 border-t border-gray-700">
         <button
-          onClick={adminLogout}
+          onClick={handleLogout}
           className="w-full flex items-center px-4 py-3 text-left text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
         >
           <FaSignOutAlt className="mr-3" />
@@ -68,13 +93,19 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
 
 const DashboardContent = () => {
   const [stats, setStats] = useState(null);
+  
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get(`${API_URL}/dashboard`);
+        // ✅ TOKEN attach with request
+        const res = await axios.get(`${API_URL}/dashboard`, getAuthConfig());
         setStats(res.data.data);
       } catch (error) {
         console.error('Error fetching stats:', error);
+        if (error.response?.status === 401) {
+          alert('Session expired. Please login again.');
+          window.location.href = '/admin/login';
+        }
       }
     };
     fetchStats();
@@ -123,10 +154,15 @@ const UsersContent = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get(`${API_URL}/users`);
+      // ✅ TOKEN attached
+      const res = await axios.get(`${API_URL}/users`, getAuthConfig());
       setUsers(res.data.data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
+      if (error.response?.status === 401) {
+        alert('Session expired. Login again.');
+        window.location.href = '/admin/login';
+      }
     } finally {
       setLoading(false);
     }
@@ -143,12 +179,13 @@ const UsersContent = () => {
     if (!selectedUser || !balanceAmount) return;
     
     try {
+      // ✅ TOKEN attached
       await axios.put(`${API_URL}/user/balance`, {
         userId: selectedUser._id,
         amount: parseFloat(balanceAmount),
         type: balanceType,
         remark: `Admin ${balanceType} balance`
-      });
+      }, getAuthConfig());
       alert(`Balance ${balanceType === 'add' ? 'added' : 'deducted'} successfully!`);
       setShowModal(false);
       fetchUsers();
@@ -159,7 +196,11 @@ const UsersContent = () => {
 
   const blockUser = async (userId, isBlocked) => {
     try {
-      await axios.put(`${API_URL}/user/block`, { userId, isBlocked: !isBlocked });
+      // ✅ TOKEN attached
+      await axios.put(`${API_URL}/user/block`, 
+        { userId, isBlocked: !isBlocked },
+        getAuthConfig()
+      );
       alert(`User ${!isBlocked ? 'blocked' : 'unblocked'} successfully!`);
       fetchUsers();
     } catch (error) {
@@ -247,6 +288,17 @@ const GamesContent = () => <h2 className="text-3xl font-bold mb-6 text-white">Ma
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('Dashboard');
+
+  // ✅ Check token on mount
+  useEffect(() => {
+    const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
+    if (!token) {
+      window.location.href = '/admin/login';
+      return;
+    }
+    // Set default axios header
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  }, []);
 
   const renderContent = () => {
     switch (activeTab) {

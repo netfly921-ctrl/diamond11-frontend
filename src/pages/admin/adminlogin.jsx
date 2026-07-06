@@ -12,7 +12,7 @@ const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
-  const { adminLogin } = useAuth(); // AuthContext se function le rahe hain
+  const { adminLogin } = useAuth();
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -20,27 +20,39 @@ const AdminLogin = () => {
     setIsLoading(true);
 
     try {
-      // 🚀 Direct Backend URL Pe Request
+      // ✅ FIXED URL - /api/admin/login (backend route match)
       const res = await axios.post(`${API_URL}/api/admin/login`, {
         username,
         password
       });
 
-      // Agar login successful hai
+      console.log('Login Response:', res.data); // Debug
+
       if (res && res.data && res.data.success) {
-        // Token aur data save karo
-        adminLogin(res.data.admin || res.data.data, res.data.token);
+        const token = res.data.token;
+        const adminData = res.data.admin || res.data.data || { username };
         
-        // Dashboard pe redirect karo
+        // ✅ Token ko MULTIPLE keys me save karo (compatibility)
+        localStorage.setItem('token', token);
+        localStorage.setItem('adminToken', token);
+        localStorage.setItem('admin', JSON.stringify(adminData));
+        
+        // ✅ Axios default header set karo
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        // Context update
+        if (adminLogin) {
+          adminLogin(adminData, token);
+        }
+        
+        // Dashboard redirect
         navigate('/admin/dashboard');
       } else {
-        // Agar backend bole login fail hua
-        setError(res?.data?.message || 'Login failed. Please check credentials.');
+        setError(res?.data?.message || 'Login failed');
       }
     } catch (err) {
       console.error("Admin Login Error:", err);
-      // 🔥 Crash hone se bachaane ke liye safe error handling
-      setError(err.response?.data?.message || 'Invalid Username or Password / Server Error');
+      setError(err.response?.data?.message || 'Invalid Username or Password');
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +63,6 @@ const AdminLogin = () => {
       <div className="max-w-md w-full bg-gray-800 rounded-xl shadow-lg p-8">
         <h2 className="text-2xl font-bold text-white text-center mb-6">Admin Panel</h2>
         
-        {/* Error Message Dikhane Ke Liye */}
         {error && (
           <div className="bg-red-500/20 border border-red-500 text-red-500 p-3 rounded mb-4 text-sm text-center">
             {error}
