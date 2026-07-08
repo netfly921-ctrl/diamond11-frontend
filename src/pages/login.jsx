@@ -10,7 +10,7 @@ const Login = () => {
   const [uid, setUid] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, user } = useAuth();
+  const { loginUser, user } = useAuth();  // ✅ FIXED: loginUser (not login)
   const navigate = useNavigate();
 
   // If already logged in, redirect to home
@@ -25,8 +25,9 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const loginUser = loginType === 'phone' ? phone : uid;
-      const result = await login(loginUser, password);
+      // ✅ FIXED: Renamed variable to avoid conflict
+      const loginId = loginType === 'phone' ? phone : uid;
+      const result = await loginUser(loginId, password);  // ✅ Call loginUser API
       
       if (result.success) {
         navigate('/home');
@@ -34,6 +35,7 @@ const Login = () => {
         setError(result.message || 'Login failed');
       }
     } catch (err) {
+      console.error('Login catch error:', err);
       setError('Network error. Please check if backend is running.');
     } finally {
       setLoading(false);
