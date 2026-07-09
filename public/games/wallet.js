@@ -1,133 +1,140 @@
-// 🎮 Diamond 11 - Universal Game Bridge
-(function() {
-    const API_URL = 'https://diamond11-backend.onrender.com/api';
-    const token = localStorage.getItem('token');
+// 🎰 Diamond 11 - Casino Wallet Helper
+// Path: frontend/public/games/wallet.js
 
-    if (!token) {
-        console.warn("⚠️ Not logged in - wallet disabled");
-        return;
+(function () {
+    const API = 'https://diamond11-backend.onrender.com/api';
+
+    // Get token from URL
+    function getToken() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('token');
     }
+
+    const token = getToken();
 
     window.CasinoGame = {
         balance: 0,
+        _syncing: false,
 
-        async init() {
+        // ✅ Fetch balance from server
+        async fetchBalance() {
+            if (!token) {
+                console.warn('No token found in URL');
+                return 0;
+            }
             try {
-                const res = await fetch(`${API_URL}/wallet/balance`, {
+                const res = await fetch(`${API}/wallet/balance`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
-                this.balance = data.balance || data.data?.balance || 0;
-                this.updateUI();
-                console.log("💰 Wallet Ready:", this.balance);
-            } catch (e) { console.error("Init Error:", e); }
-        },
-
-        async placeBet(amount) {
-            if (this.balance < amount) {
-                alert("Insufficient Balance! Please deposit.");
-                return false;
-            }
-            try {
-                const res = await fetch(`${API_URL}/wallet/bet`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json', 
-                        'Authorization': `Bearer ${token}` 
-                    },
-                    body: JSON.stringify({ amount })
-                });
-                const data = await res.json();
-                if (data.success || data.balance !== undefined) {
-                    this.balance = data.balance || (this.balance - amount);
+                if (data.success) {
+                    this.balance = data.data?.balance || data.balance || 0;
                     this.updateUI();
-                    return true;
+                    return this.balance;
                 }
-                alert(data.message || "Bet failed");
-                return false;
-            } catch (e) { 
-                console.error("Bet Error:", e);
-                this.balance -= amount;
-                this.updateUI();
-                return true;
+            } catch (e) {
+                console.error('Wallet fetch error:', e);
             }
+            return this.balance;
         },
 
-        async reportWin(amount) {
+        // ✅ Place Bet - Server pe deduct hoga
+        async placeBet(amount) {
+            if (!token) {
+                console.warn('No token');
+                return false;
+            }
+            if (amount <= 0) return false;
+            if (amount > this.balance) {
+                console.warn('Insufficient balance');
+                return false;
+            }
+
             try {
-                const res = await fetch(`${API_URL}/wallet/win`, {
+                const res = await fetch(`${API}/game/place-bet`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json', 
-                        'Authorization': `Bearer ${token}` 
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ amount })
+                    body: JSON.stringify({
+                        gameCode: 'casino',
+                        betAmount: amount
+                    })
                 });
                 const data = await res.json();
-                this.balance = data.balance || (this.balance + amount);
-                this.updateUI();
-                this.celebrate(amount);
-            } catch (e) { 
-                console.error("Win Error:", e);
-                this.balance += amount;
-                this.updateUI();
+
+                if (data.success) {
+                    // ✅ Server se aaya hua balance set karo
+                    this.balance = data.newBalance ?? (this.balance - amount);
+                    this.updateUI();
+                    console.log(`✅ Bet placed: ₹${amount} | New Balance: ₹${this.balance}`);
+                    return true;
+                } else {
+                    console.warn('Bet failed:', data.message);
+                    return false;
+                }
+            } catch (e) {
+                console.error('PlaceBet error:', e);
+                return false;
             }
         },
 
-        updateUI() {
-            const balanceText = "₹" + this.balance.toFixed(2);
-            
-            // Multiple IDs try
-            ['user-balance', 'balance', 'wallet-balance', 'current-balance', 'walletBalance', 'coins', 'money'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.innerText = balanceText;
-            });
+        // ✅ Report Win - Server pe add hoga
+        async reportWin(amount) {
+            if (!token) return false;
+            if (amount <= 0) return false;
 
-            // Multiple classes try
-            ['balance', 'wallet-balance', 'user-balance', 'balance-text', 'coins-display'].forEach(cls => {
-                document.querySelectorAll('.' + cls).forEach(el => {
-                    el.innerText = balanceText;
+            try {
+                const res = await fetch(`${API}/game/cashout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        gameCode: 'casino',
+                        betAmount: 0,
+                        winAmount: amount,
+                        multiplier: 1
+                    })
                 });
-            });
+                const data = await res.json();
 
-            // Login button replace
-            document.querySelectorAll('button, a, span, div').forEach(el => {
-                const text = el.textContent.trim();
-                if (text === '₹Login' || text === 'Login') {
-                    el.textContent = balanceText;
-                    el.style.color = '#ffd700';
-                    el.style.fontWeight = 'bold';
+                if (data.success) {
+                    // ✅ Server se aaya hua balance set karo
+                    this.balance = data.newBalance ?? (this.balance + amount);
+                    this.updateUI();
+                    console.log(`✅ Win reported: ₹${amount} | New Balance: ₹${this.balance}`);
+                    return true;
+                } else {
+                    console.warn('Cashout failed:', data.message);
+                    return false;
                 }
-            });
-
-            // Global variables update
-            if (typeof window.gameBalance !== 'undefined') window.gameBalance = this.balance;
-            if (typeof window.userBalance !== 'undefined') window.userBalance = this.balance;
-            if (typeof window.balance !== 'undefined') window.balance = this.balance;
+            } catch (e) {
+                console.error('ReportWin error:', e);
+                return false;
+            }
         },
 
-        celebrate(amt) {
-            const popup = document.createElement('div');
-            popup.style.cssText = `
-                position: fixed; top: 50%; left: 50%;
-                transform: translate(-50%, -50%);
-                background: linear-gradient(135deg, #ffd700, #ff8c00);
-                color: white; padding: 30px 50px;
-                border-radius: 20px; font-size: 24px;
-                font-weight: bold; z-index: 99999;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            `;
-            popup.innerHTML = `🎉 YOU WON ₹${amt}! 🎉`;
-            document.body.appendChild(popup);
-            setTimeout(() => popup.remove(), 2500);
+        // ✅ Update all balance displays on page
+        updateUI() {
+            const selectors = [
+                '#balance', '#topBal', '#topBalance',
+                '#walletBalance', '#balanceDisplay'
+            ];
+            selectors.forEach(sel => {
+                const el = document.querySelector(sel);
+                if (el) el.textContent = this.balance.toFixed(2);
+            });
         }
     };
 
-    window.addEventListener('DOMContentLoaded', () => {
-        window.CasinoGame.init();
-    });
+    // ✅ Initial balance load
+    if (token) {
+        window.CasinoGame.fetchBalance();
+    } else {
+        console.warn('⚠️ No token in URL. Add ?token=YOUR_TOKEN to URL');
+    }
 
-    setInterval(() => {
-        if (window.CasinoGame) window.CasinoGame.init();
-    }, 30000);
 })();
