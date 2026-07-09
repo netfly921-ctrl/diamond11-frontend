@@ -1,10 +1,14 @@
-<!-- Chicken Game Final Version -->
+<!-- Chicken Game Final Version - Wallet Integrated -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chicken Pro</title>
+    <title>Chicken Pro - Diamond 11</title>
+
+    <!-- ✅ WALLET INTEGRATION -->
+    <script src="../wallet.js"></script>
+
     <style>
         :root {
             --bg-dark: #050510;
@@ -25,10 +29,27 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             padding: 15px;
+            padding-top: 65px;
             color: white;
         }
+
+        /* ✅ ADDED: Top Bar */
+        #topBar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 50px;
+            background: #14141f;
+            border-bottom: 2px solid var(--neon-orange);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 18px;
+            z-index: 999;
+            font-weight: 700;
+        }
+        .bal-top { color: #ffd700; font-size: 1.2rem; }
 
         .game-wrapper {
             width: 100%;
@@ -55,7 +76,7 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .balance {
+        .balance-display {
             color: var(--neon-green);
             font-weight: 700;
         }
@@ -139,18 +160,23 @@
             border: none;
             font-weight: 700;
             cursor: pointer;
+            font-size: 1rem;
+            transition: 0.2s;
         }
 
         .btn-start {
             background: var(--neon-orange);
             color: black;
         }
+        .btn-start:hover { transform: translateY(-2px); }
+        .btn-start:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
         .btn-cashout {
             background: var(--neon-green);
             color: black;
             display: none;
         }
+        .btn-cashout:hover { transform: translateY(-2px); }
 
         .payout {
             text-align: center;
@@ -161,14 +187,42 @@
             height: 28px;
         }
 
+        .payout.lost {
+            color: var(--neon-red);
+        }
+
+        /* ✅ ADDED: Toast */
+        .toast {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            background: rgba(0,0,0,0.95);
+            border: 1px solid var(--neon-orange);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 1000;
+            transition: 0.3s;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
-<script src="/games/wallet.js"></script>
 </head>
 <body>
+
+    <!-- ✅ ADDED: Top Bar with Balance -->
+    <div id="topBar">
+        <div>🍗 CHICKEN PRO</div>
+        <div class="bal-top">₹<span id="topBal">0.00</span></div>
+    </div>
+
+    <!-- ✅ ADDED: Toast -->
+    <div class="toast" id="toast"></div>
+
     <div class="game-wrapper">
         <div class="header">
             <div class="logo">🍗 CHICKEN PRO</div>
-            <div class="balance">💰 <span id="balance">1000.00</span></div>
+            <div class="balance-display">💰 ₹<span id="balance">0.00</span></div>
         </div>
 
         <div class="payout" id="payout">Select bet & bones</div>
@@ -178,7 +232,7 @@
         <div class="controls-grid">
             <div>
                 <label>Bet Amount</label>
-                <input type="number" id="betInput" value="10">
+                <input type="number" id="betInput" value="10" min="10">
             </div>
             <div>
                 <label>Number Of Bones</label>
@@ -195,25 +249,46 @@
             <button class="btn-start" id="startBtn" onclick="startGame()">▶️ START GAME</button>
             <button class="btn-cashout" id="cashoutBtn" onclick="cashout()">💰 CASHOUT</button>
         </div>
-
     </div>
 
     <script>
+        // ✅ WALLET INTEGRATION - No more direct API calls
         let balance = 0;
+        let bet = 0;
+        let bones = 1;
+        let clicks = 0;
+        let gameActive = false;
+        let traps = [];
 
-async function getWallet() {
-  const res = await fetch('/api/wallet'); // tumhari site ka wallet API
-  const data = await res.json();
-  balance = data.balance;
-  document.getElementById('balance').innerText = balance.toFixed(2);
-}
+        // ✅ CHANGED: Balance now comes from wallet.js
+        function syncBalance() {
+            balance = window.CasinoGame ? window.CasinoGame.balance : 0;
+            document.getElementById('balance').textContent = balance.toFixed(2);
+            document.getElementById('topBal').textContent = balance.toFixed(2);
+        }
 
-// page open hote hi wallet le aao
-getWallet();
+        // ✅ Wait for wallet to initialize
+        function waitForWallet() {
+            if (window.CasinoGame && window.CasinoGame.balance !== undefined) {
+                syncBalance();
+                setInterval(syncBalance, 2000);
+            } else {
+                setTimeout(waitForWallet, 500);
+            }
+        }
+        waitForWallet();
+
+        // ✅ Toast function
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
 
         // Generate grid
         const grid = document.getElementById('grid');
-        for(let i = 0; i < 25; i++) {
+        for (let i = 0; i < 25; i++) {
             const dish = document.createElement('div');
             dish.className = 'dish disabled';
             dish.innerText = '🍽️';
@@ -222,25 +297,32 @@ getWallet();
             grid.appendChild(dish);
         }
 
-        window.startGame = function() {
+        // ✅ CHANGED: startGame is now async, uses wallet.js placeBet
+        window.startGame = async function() {
             bet = parseFloat(document.getElementById('betInput').value);
             bones = parseInt(document.getElementById('bonesSelect').value);
 
-            if(bet > balance) return alert('Insufficient Balance');
+            if (bet < 10) return showToast('Min bet ₹10');
 
-            balance -= bet;
+            // ✅ WALLET: Place bet through wallet.js
+            const success = await window.CasinoGame.placeBet(bet);
+            if (!success) return showToast('Insufficient Balance!');
+
+            // ✅ Sync balance after bet deduction
+            syncBalance();
+
             clicks = 0;
             gameActive = true;
 
-            // Generate traps - ye logic backend pe hona chahiye
+            // Generate traps
             traps = [];
-            while(traps.length < bones) {
+            while (traps.length < bones) {
                 const r = Math.floor(Math.random() * 25);
-                if(!traps.includes(r)) traps.push(r);
+                if (!traps.includes(r)) traps.push(r);
             }
 
             // Reset UI
-            for(let i = 0; i < 25; i++) {
+            for (let i = 0; i < 25; i++) {
                 const d = document.getElementById(`dish-${i}`);
                 d.className = 'dish';
                 d.innerText = '🍽️';
@@ -248,16 +330,16 @@ getWallet();
 
             document.getElementById('startBtn').style.display = 'none';
             document.getElementById('cashoutBtn').style.display = 'block';
+            document.getElementById('payout').className = 'payout';
             updatePayout();
-            updateUI();
         }
 
         window.clickDish = function(index) {
-            if(!gameActive) return;
+            if (!gameActive) return;
             const dish = document.getElementById(`dish-${index}`);
-            if(dish.className !== 'dish') return;
+            if (dish.className !== 'dish') return;
 
-            if(traps.includes(index)) {
+            if (traps.includes(index)) {
                 dish.innerText = '🦴';
                 dish.classList.add('bone');
                 gameOver(false);
@@ -269,55 +351,64 @@ getWallet();
             }
         }
 
-        window.cashout = function() {
+        // ✅ CHANGED: cashout is now async, uses wallet.js reportWin
+        window.cashout = async function() {
+            if (!gameActive) return;
+
             const mult = getMultiplier(clicks);
-            const win = bet * mult;
-            balance += win;
-            gameOver(true, win);
+            const winAmount = parseFloat((bet * mult).toFixed(2));
+
+            // ✅ WALLET: Report win through wallet.js
+            await window.CasinoGame.reportWin(winAmount);
+            syncBalance();
+
+            gameOver(true, winAmount);
+            showToast(`🎉 Won ₹${winAmount.toFixed(2)}!`);
         }
 
         function gameOver(win, amount = 0) {
             gameActive = false;
 
             // Reveal all
-            for(let i = 0; i < 25; i++) {
+            for (let i = 0; i < 25; i++) {
                 const d = document.getElementById(`dish-${i}`);
                 d.classList.add('disabled');
-                if(traps.includes(i)) d.innerText = '🦴';
+                if (traps.includes(i)) d.innerText = '🦴';
                 else d.innerText = '🍗';
             }
 
             document.getElementById('startBtn').style.display = 'block';
             document.getElementById('cashoutBtn').style.display = 'none';
 
-            if(win) {
-                document.getElementById('payout').textContent = `✅ WIN +${amount.toFixed(2)}`;
+            if (win) {
+                document.getElementById('payout').textContent = `✅ WIN +₹${amount.toFixed(2)}`;
+                document.getElementById('payout').className = 'payout';
             } else {
-                document.getElementById('payout').textContent = `💥 YOU HIT A BONE!`;
+                document.getElementById('payout').textContent = `💥 YOU HIT A BONE! -₹${bet.toFixed(2)}`;
+                document.getElementById('payout').className = 'payout lost';
+                showToast(`💀 Lost ₹${bet.toFixed(2)}`);
             }
 
-            updateUI();
+            // ✅ Always sync after game ends
+            syncBalance();
         }
 
         function getMultiplier(c) {
             const n = 25;
             const b = bones;
             let p = 1;
-            for(let i = 0; i < c; i++) {
+            for (let i = 0; i < c; i++) {
                 p *= (n - b - i) / (n - i);
             }
-            return (0.95 / p).toFixed(2);
+            return parseFloat((0.95 / p).toFixed(2));
         }
 
         function updatePayout() {
-            const mult = getMultiplier(clicks + 1);
-            document.getElementById('payout').textContent = `Next: ${mult}x | Cashout: ${(bet * getMultiplier(clicks)).toFixed(2)}`;
+            const nextMult = getMultiplier(clicks + 1);
+            const currentMult = getMultiplier(clicks);
+            const cashoutAmount = (bet * currentMult).toFixed(2);
+            document.getElementById('payout').textContent = `Next: ${nextMult}x | Cashout: ₹${cashoutAmount}`;
         }
-
-        function updateUI() {
-            document.getElementById('balance').textContent = balance.toFixed(2);
-        }
-
     </script>
 </body>
 </html>

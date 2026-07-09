@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dice - Diamond 11</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-    
+
+    <!-- ✅ WALLET INTEGRATION -->
+    <script src="../wallet.js"></script>
+
     <script>
     const soundManager = {
         win: null, lose: null, click: null, enabled: true,
@@ -50,70 +53,179 @@
         .bet-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
         .bet-row label { font-size: 0.75rem; color: #8b9bb4; min-width: 70px; }
         .bet-row input { flex: 1; padding: 10px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; color: white; font-weight: 700; outline: none; }
-        .quick { display: flex; gap: 5px; } .quick button { flex: 1; padding: 6px; background: rgba(255,255,255,0.06); border: none; border-radius: 6px; color: #aaa; font-size: 0.8rem; cursor: pointer; }
+        .quick { display: flex; gap: 5px; }
+        .quick button { flex: 1; padding: 6px; background: rgba(255,255,255,0.06); border: none; border-radius: 6px; color: #aaa; font-size: 0.8rem; cursor: pointer; }
+        .quick button:hover { background: rgba(255,255,255,0.12); color: white; }
         .roll-btn { width: 100%; padding: 16px; border: none; border-radius: 14px; background: linear-gradient(135deg, var(--orange), #ff6b00); color: black; font-weight: 900; font-size: 1.2rem; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 25px rgba(251,146,60,0.4); transition: 0.2s; }
-        .roll-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .roll-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(251,146,60,0.6); }
+        .roll-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-120px); background: rgba(0,0,0,0.95); border: 1px solid var(--orange); padding: 12px 24px; border-radius: 12px; font-weight: 600; z-index: 1000; transition: 0.3s; }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
-<script src="/games/wallet.js"></script>
 </head>
 <body>
-    <div id="topBar"><div><i class="fa-solid fa-dice"></i> DICE</div><div class="bal-top">₹<span id="topBal">0.00</span></div></div>
+    <div id="topBar">
+        <div><i class="fa-solid fa-dice"></i> DICE</div>
+        <div class="bal-top">₹<span id="topBal">0.00</span></div>
+    </div>
     <div class="toast" id="toast"></div>
+
     <div class="box">
-        <div class="poster"><button class="sound-btn" id="soundBtn" onclick="toggleSound()"><i class="fa-solid fa-volume-high"></i></button></div>
-        <div class="head"><div class="logo">🎲 LUCKY DICE</div><div class="bal">₹<span id="balance">0.00</span></div></div>
-        <div class="dice-area"><div class="dice-result" id="diceResult">50</div></div>
-        <div class="slider-box"><div class="slider-header"><span>Target: <b id="targetLabel" style="color:var(--orange)">50</b></span><span>Multiplier: <b id="multLabel" style="color:var(--green)">1.96x</b></span></div><input type="range" id="targetRange" min="5" max="95" value="50" oninput="updateRange()"></div>
-        <div class="condition-tabs"><button class="cond-btn active" id="btnOver" onclick="setCondition('over')">OVER 📈</button><button class="cond-btn" id="btnUnder" onclick="setCondition('under')">UNDER 📉</button></div>
-        <div class="bet-box"><div class="bet-row"><label>BET AMOUNT</label><input type="number" id="betInput" value="10" min="10"></div><div class="quick"><button onclick="quickBet('half')">½</button><button onclick="quickBet('double')">2×</button><button onclick="quickBet(100)">100</button><button onclick="quickBet(500)">500</button></div></div>
-        <button class="roll-btn" id="rollBtn" onclick="rollDice()">ROLL DICE</button>
+        <div class="poster">
+            <button class="sound-btn" id="soundBtn" onclick="toggleSound()">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+        </div>
+        <div class="head">
+            <div class="logo">🎲 LUCKY DICE</div>
+            <div class="bal">₹<span id="balance">0.00</span></div>
+        </div>
+        <div class="dice-area">
+            <div class="dice-result" id="diceResult">50</div>
+        </div>
+        <div class="slider-box">
+            <div class="slider-header">
+                <span>Target: <b id="targetLabel" style="color:var(--orange)">50</b></span>
+                <span>Multiplier: <b id="multLabel" style="color:var(--green)">1.96x</b></span>
+            </div>
+            <input type="range" id="targetRange" min="5" max="95" value="50" oninput="updateRange()">
+        </div>
+        <div class="condition-tabs">
+            <button class="cond-btn active" id="btnOver" onclick="setCondition('over')">OVER 📈</button>
+            <button class="cond-btn" id="btnUnder" onclick="setCondition('under')">UNDER 📉</button>
+        </div>
+        <div class="bet-box">
+            <div class="bet-row">
+                <label>BET AMOUNT</label>
+                <input type="number" id="betInput" value="10" min="10">
+            </div>
+            <div class="quick">
+                <button onclick="quickBet('half')">½</button>
+                <button onclick="quickBet('double')">2×</button>
+                <button onclick="quickBet(100)">100</button>
+                <button onclick="quickBet(500)">500</button>
+            </div>
+        </div>
+        <button class="roll-btn" id="rollBtn" onclick="rollDice()">🎲 ROLL DICE</button>
     </div>
 
     <script>
-        const params = new URLSearchParams(location.search); const token = params.get('token'); const API = 'https://diamond11-backend.onrender.com';
+        // ✅ WALLET INTEGRATION - No more direct API calls
+        // ❌ REMOVED: const token, const API
+
         let balance = 0, rolling = false, condition = 'over', targetValue = 50;
 
-        async function getBalance() { if (!token) return; try { const r = await fetch(`${API}/wallet/balance`, { headers: { 'Authorization': `Bearer ${token}` } }); const d = await r.json(); if (d.success) { balance = d.data.balance || 0; document.getElementById('balance').textContent = balance.toFixed(2); document.getElementById('topBal').textContent = balance.toFixed(2); } } catch(e) {} }
-        window.updateRange = () => { targetValue = parseInt(document.getElementById('targetRange').value); document.getElementById('targetLabel').textContent = targetValue; let chance = condition === 'over' ? (100 - targetValue) : targetValue; let mult = (98 / chance).toFixed(2); document.getElementById('multLabel').textContent = mult + 'x'; };
-        window.setCondition = (c) => { condition = c; document.getElementById('btnOver').classList.toggle('active', c === 'over'); document.getElementById('btnUnder').classList.toggle('active', c === 'under'); updateRange(); soundManager.play('click'); };
-        window.quickBet = (v) => { soundManager.play('click'); const inp = document.getElementById('betInput'); if (v === 'half') inp.value = Math.max(10, Math.floor(+inp.value / 2)); else if (v === 'double') inp.value = Math.min(balance, Math.floor(+inp.value * 2)); else inp.value = v; };
+        // ✅ CHANGED: Balance now comes from wallet.js
+        function syncBalance() {
+            balance = window.CasinoGame ? window.CasinoGame.balance : 0;
+            document.getElementById('balance').textContent = balance.toFixed(2);
+            document.getElementById('topBal').textContent = balance.toFixed(2);
+        }
 
+        // ✅ Wait for wallet to initialize
+        function waitForWallet() {
+            if (window.CasinoGame && window.CasinoGame.balance !== undefined) {
+                syncBalance();
+                setInterval(syncBalance, 2000);
+            } else {
+                setTimeout(waitForWallet, 500);
+            }
+        }
+        waitForWallet();
+
+        // Slider update
+        window.updateRange = () => {
+            targetValue = parseInt(document.getElementById('targetRange').value);
+            document.getElementById('targetLabel').textContent = targetValue;
+            const chance = condition === 'over' ? (100 - targetValue) : targetValue;
+            const mult = (98 / chance).toFixed(2);
+            document.getElementById('multLabel').textContent = mult + 'x';
+        };
+
+        window.setCondition = (c) => {
+            condition = c;
+            document.getElementById('btnOver').classList.toggle('active', c === 'over');
+            document.getElementById('btnUnder').classList.toggle('active', c === 'under');
+            updateRange();
+            soundManager.play('click');
+        };
+
+        // ✅ CHANGED: quickBet uses wallet balance
+        window.quickBet = (v) => {
+            soundManager.play('click');
+            const inp = document.getElementById('betInput');
+            const walletBal = window.CasinoGame ? window.CasinoGame.balance : 0;
+            if (v === 'half') inp.value = Math.max(10, Math.floor(+inp.value / 2));
+            else if (v === 'double') inp.value = Math.min(walletBal, Math.floor(+inp.value * 2));
+            else inp.value = v;
+        };
+
+        // ✅ CHANGED: rollDice uses wallet.js placeBet & reportWin
         window.rollDice = async () => {
             if (rolling) return;
             const bet = parseFloat(document.getElementById('betInput').value) || 10;
-            if (bet < 10) return showToast('Min ₹10'); if (bet > balance) return showToast('Low balance');
-            rolling = true; document.getElementById('rollBtn').disabled = true; soundManager.play('click');
-            try { const r = await fetch(`${API}/game/place-bet`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ gameCode: 'dice', betAmount: bet }) }); const d = await r.json(); if (!d.success) throw 0; balance = d.newBalance; getBalance(); } catch(e) { rolling = false; document.getElementById('rollBtn').disabled = false; return showToast('Bet failed'); }
-            
-            const dice = document.getElementById('diceResult'); dice.className = 'dice-result rolling';
-            
+            if (bet < 10) return showToast('Min ₹10');
+
+            // ✅ WALLET: Place bet through wallet.js
+            const success = await window.CasinoGame.placeBet(bet);
+            if (!success) return showToast('Low balance!');
+
+            rolling = true;
+            document.getElementById('rollBtn').disabled = true;
+            soundManager.play('click');
+
+            // ✅ Sync after bet deduction
+            syncBalance();
+
+            const dice = document.getElementById('diceResult');
+            dice.className = 'dice-result rolling';
+
             // ✅ 40% WIN / 60% LOSS LOGIC
             const win = Math.random() < 0.40;
             let finalRoll;
             if (win) {
-                finalRoll = condition === 'over' ? (targetValue + 1 + Math.floor(Math.random() * (100 - targetValue))) : (1 + Math.floor(Math.random() * (targetValue - 1)));
+                finalRoll = condition === 'over'
+                    ? (targetValue + 1 + Math.floor(Math.random() * (99 - targetValue)))
+                    : (1 + Math.floor(Math.random() * (targetValue - 1)));
             } else {
-                finalRoll = condition === 'over' ? (1 + Math.floor(Math.random() * targetValue)) : (targetValue + Math.floor(Math.random() * (100 - targetValue)));
+                finalRoll = condition === 'over'
+                    ? (1 + Math.floor(Math.random() * targetValue))
+                    : (targetValue + Math.floor(Math.random() * (99 - targetValue)));
             }
 
             setTimeout(async () => {
-                dice.className = 'dice-result'; dice.textContent = finalRoll; rolling = false; document.getElementById('rollBtn').disabled = false;
+                dice.className = 'dice-result';
+                dice.textContent = finalRoll;
+                rolling = false;
+                document.getElementById('rollBtn').disabled = false;
+
                 const chance = condition === 'over' ? (100 - targetValue) : targetValue;
                 const mult = parseFloat((98 / chance).toFixed(2));
-                const winAmount = bet * mult;
+                const winAmount = parseFloat((bet * mult).toFixed(2));
 
                 if (win) {
-                    soundManager.play('win'); showToast(`🎉 You Won ₹${winAmount.toFixed(0)}!`);
-                    try { await fetch(`${API}/game/cashout`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ gameCode: 'dice', betAmount: bet, winAmount, multiplier: mult }) }); getBalance(); } catch(e) {}
+                    // ✅ WALLET: Report win through wallet.js
+                    await window.CasinoGame.reportWin(winAmount);
+                    syncBalance();
+                    soundManager.play('win');
+                    showToast(`🎉 Won ₹${winAmount.toFixed(0)}!`);
                 } else {
-                    soundManager.play('lose'); showToast(`💸 You Lost ₹${bet}`);
+                    syncBalance();
+                    soundManager.play('lose');
+                    showToast(`💸 Lost ₹${bet}`);
                 }
             }, 1500);
         };
-        function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
-        getBalance(); updateRange(); setInterval(getBalance, 5000);
+
+        function showToast(m) {
+            const t = document.getElementById('toast');
+            t.textContent = m;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
+
+        // ✅ INIT
+        updateRange();
     </script>
 </body>
 </html>

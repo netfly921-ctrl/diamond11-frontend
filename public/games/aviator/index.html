@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aviator Pro - Diamond 11</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <!-- ✅ WALLET INTEGRATION -->
+    <script src="../wallet.js"></script>
+
     <script>
     // ✅ SOUND MANAGER
     const soundManager = {
@@ -21,7 +24,6 @@
             this.click.volume = 0.4;
             this.updateIcon();
             
-            // Unlock audio on first interaction
             document.addEventListener('click', () => {
                 [this.win, this.lose, this.click].forEach(a => {
                     a.play().then(() => a.pause()).catch(() => {});
@@ -73,7 +75,6 @@
             min-height: 100vh;
         }
 
-        /* Top Bar */
         #topBar {
             position: fixed;
             top: 0; left: 0; right: 0;
@@ -89,14 +90,12 @@
         }
         #topBar .bal { color: var(--yellow); font-size: 1.1rem; }
 
-        /* Main Container */
         .container {
             max-width: 500px;
             margin: 0 auto;
             padding: 12px;
         }
 
-        /* Poster */
         .poster {
             height: 100px;
             border-radius: 16px;
@@ -122,7 +121,6 @@
             font-size: 1.2rem;
         }
 
-        /* History */
         .history {
             display: flex;
             gap: 6px;
@@ -144,7 +142,6 @@
         .hist-low { background: rgba(255,42,42,0.15); color: var(--red); border-color: rgba(255,42,42,0.3); }
         .hist-mid { background: rgba(251,146,60,0.15); color: var(--orange); border-color: rgba(251,146,60,0.3); }
 
-        /* Game Screen */
         .game-box {
             background: rgba(0,0,0,0.4);
             border: 1px solid var(--border);
@@ -184,7 +181,6 @@
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
         @keyframes shake { 0%,100%{transform:translate(-50%,-50%)} 25%{transform:translate(-52%,-50%)} 75%{transform:translate(-48%,-50%)} }
 
-        /* Plane */
         .plane {
             position: absolute;
             font-size: 2.5rem;
@@ -193,7 +189,6 @@
             transition: all 0.1s linear;
         }
 
-        /* Status */
         .status {
             text-align: center;
             padding: 10px;
@@ -204,7 +199,6 @@
             border: 1px solid var(--border);
         }
 
-        /* Live Players */
         .live-box {
             background: rgba(0,0,0,0.3);
             border: 1px solid var(--border);
@@ -252,7 +246,6 @@
         .live-win { color: var(--green); font-weight: 700; }
         .live-loss { color: var(--red); }
 
-        /* Bet Panels */
         .bet-area {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -372,7 +365,6 @@
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
-<script src="/games/wallet.js"></script>
 </head>
 <body>
 
@@ -384,27 +376,22 @@
 <div class="toast" id="toast"></div>
 
 <div class="container">
-    <!-- Poster -->
     <div class="poster">
         <button class="sound-btn" id="soundToggle" onclick="toggleSound()">
             <i class="fa-solid fa-volume-high"></i>
         </button>
     </div>
 
-    <!-- History -->
     <div class="history" id="history"></div>
 
-    <!-- Game Screen -->
     <div class="game-box">
         <canvas id="gameCanvas"></canvas>
         <div class="multiplier waiting" id="multiplier">WAITING...</div>
         <div class="plane" id="plane" style="display:none;">✈️</div>
     </div>
 
-    <!-- Status -->
     <div class="status" id="status">Next round in 8s</div>
 
-    <!-- Live Players -->
     <div class="live-box">
         <div class="live-header">
             <span>🔴 LIVE BETS</span>
@@ -413,9 +400,7 @@
         <div class="live-list" id="liveList"></div>
     </div>
 
-    <!-- Bet Panels -->
     <div class="bet-area">
-        <!-- Bet 1 -->
         <div class="bet-card">
             <div class="bet-title">Bet 1</div>
             <input type="number" id="bet1" value="10" min="10">
@@ -433,7 +418,6 @@
             <button class="action-btn btn-cash" id="cash1" style="display:none;" onclick="cashout(1)">CASHOUT</button>
         </div>
 
-        <!-- Bet 2 -->
         <div class="bet-card">
             <div class="bet-title">Bet 2</div>
             <input type="number" id="bet2" value="20" min="10">
@@ -454,10 +438,8 @@
 </div>
 
 <script>
-// ===== CONFIG =====
-const urlParams = new URLSearchParams(window.location.search);
-const userToken = urlParams.get('token');
-const API_BASE = 'https://diamond11-backend.onrender.com'; // Backend URL
+// ✅ WALLET INTEGRATION - No more direct API calls
+// ❌ REMOVED: const urlParams, userToken, API_BASE
 
 // ===== STATE =====
 let balance = 0;
@@ -482,7 +464,6 @@ const multEl = document.getElementById('multiplier');
 const planeEl = document.getElementById('plane');
 const statusEl = document.getElementById('status');
 
-// Resize canvas
 function resize() {
     const box = canvas.parentElement;
     canvas.width = box.clientWidth;
@@ -491,36 +472,35 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
-// ===== WALLET FUNCTIONS =====
-async function fetchBalance() {
-    if (!userToken) return;
-    try {
-        const res = await fetch(`${API_BASE}/wallet/balance`, {
-            headers: { 'Authorization': `Bearer ${userToken}` }
-        });
-        const data = await res.json();
-        if (data.success) {
-            balance = data.data.balance || 0;
-            document.getElementById('topBalance').textContent = balance.toFixed(2);
-        }
-    } catch (err) {}
+// ✅ CHANGED: Balance now comes from wallet.js
+function syncBalance() {
+    balance = window.CasinoGame ? window.CasinoGame.balance : 0;
+    document.getElementById('topBalance').textContent = balance.toFixed(2);
 }
+
+// ✅ Wait for wallet to initialize
+function waitForWallet() {
+    if (window.CasinoGame && window.CasinoGame.balance !== undefined) {
+        syncBalance();
+        setInterval(syncBalance, 2000);
+    } else {
+        setTimeout(waitForWallet, 500);
+    }
+}
+waitForWallet();
 
 // ===== GAME LOGIC =====
 
-// ✅ 40% WIN / 60% LOSS LOGIC (CHANGED HERE)
+// ✅ 40% WIN / 60% LOSS LOGIC
 function generateCrashPoint() {
     const rand = Math.random();
     if (rand < 0.40) {
-        // 40% chance - win/high multiplier (2x to 15x)
         return parseFloat((2 + Math.random() * 13).toFixed(2));
     } else {
-        // 60% chance - loss/low multiplier (1.01x to 1.5x)
         return parseFloat((1.01 + Math.random() * 0.49).toFixed(2));
     }
 }
 
-// Start betting phase (8 seconds)
 function startWaiting() {
     gameState = 'waiting';
     countdown = 8;
@@ -531,7 +511,6 @@ function startWaiting() {
     planeEl.style.display = 'none';
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Reset buttons
     [1, 2].forEach(id => {
         if (!bets[id].active) {
             document.getElementById(`btn${id}`).style.display = 'block';
@@ -550,7 +529,6 @@ function startWaiting() {
     }, 1000);
 }
 
-// Start flying
 function startFlying() {
     gameState = 'flying';
     currentMultiplier = 1.00;
@@ -565,7 +543,6 @@ function startFlying() {
     
     soundManager.play('click');
 
-    // Activate cashout buttons for placed bets
     [1, 2].forEach(id => {
         if (bets[id].active && !bets[id].cashed) {
             document.getElementById(`btn${id}`).style.display = 'none';
@@ -578,26 +555,20 @@ function startFlying() {
     animate();
 }
 
-// Animation loop
 function animate() {
     if (gameState !== 'flying') return;
 
     const elapsed = (Date.now() - startTime) / 1000;
-    // Curve formula: starts slow, speeds up
     currentMultiplier = Math.pow(1.08, elapsed * 5);
     currentMultiplier = parseFloat(currentMultiplier.toFixed(2));
 
-    // Update display
     multEl.textContent = currentMultiplier.toFixed(2) + 'x';
     
-    // Color change
     if (currentMultiplier >= 5) multEl.style.color = '#ff00ff';
     else if (currentMultiplier >= 2) multEl.style.color = 'var(--yellow)';
 
-    // Draw graph
     drawGraph(elapsed);
 
-    // Check auto cashout
     [1, 2].forEach(id => {
         if (bets[id].active && !bets[id].cashed && autoSettings[id]) {
             const target = parseFloat(document.getElementById(`auto${id}`).value) || 1.5;
@@ -607,7 +578,6 @@ function animate() {
         }
     });
 
-    // Check crash
     if (currentMultiplier >= crashPoint) {
         doCrash();
         return;
@@ -616,11 +586,9 @@ function animate() {
     animationId = requestAnimationFrame(animate);
 }
 
-// Draw the flight curve
 function drawGraph(elapsed) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Grid
     ctx.strokeStyle = 'rgba(255,255,255,0.05)';
     ctx.lineWidth = 1;
     for (let i = 0; i < canvas.width; i += 40) {
@@ -630,18 +598,16 @@ function drawGraph(elapsed) {
         ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
     }
 
-    // Draw curve
     ctx.beginPath();
     ctx.moveTo(0, canvas.height);
     
     const points = [];
-    const steps = Math.min(elapsed * 60, 300); // Max points
+    const steps = Math.min(elapsed * 60, 300);
     
     for (let i = 0; i <= steps; i++) {
         const t = i / 60;
         const x = (t / elapsed) * (canvas.width - 40) + 20;
         const m = Math.pow(1.08, t * 5);
-        // Map multiplier to Y (inverse)
         const y = canvas.height - 30 - ((m - 1) / (crashPoint - 0.5)) * (canvas.height - 60);
         points.push({x, y});
     }
@@ -656,14 +622,12 @@ function drawGraph(elapsed) {
         ctx.stroke();
         ctx.shadowBlur = 0;
         
-        // Update plane position
         const last = points[points.length - 1];
         planeEl.style.left = (last.x - 20) + 'px';
         planeEl.style.top = (last.y - 20) + 'px';
     }
 }
 
-// Crash happened
 function doCrash() {
     gameState = 'crashed';
     cancelAnimationFrame(animationId);
@@ -676,7 +640,6 @@ function doCrash() {
     
     soundManager.play('lose');
     
-    // Handle losses
     [1, 2].forEach(id => {
         if (bets[id].active && !bets[id].cashed) {
             addLivePlayer(`You${id}`, bets[id].amount, 0);
@@ -688,17 +651,18 @@ function doCrash() {
     
     addHistory(crashPoint);
     
-    // Next round after 3 seconds
     setTimeout(startWaiting, 3000);
 }
 
 // ===== BET FUNCTIONS =====
 
+// ✅ CHANGED: quickBet uses wallet balance
 function quickBet(id, mult) {
     soundManager.play('click');
     const input = document.getElementById(`bet${id}`);
+    const walletBal = window.CasinoGame ? window.CasinoGame.balance : 0;
     if (mult === 'max') {
-        input.value = Math.floor(balance);
+        input.value = Math.floor(walletBal);
     } else {
         input.value = Math.max(10, Math.floor((parseFloat(input.value) || 10) * mult));
     }
@@ -710,6 +674,7 @@ function toggleAuto(id) {
     document.getElementById(`sw${id}`).classList.toggle('on', autoSettings[id]);
 }
 
+// ✅ CHANGED: placeBet now uses wallet.js
 async function placeBet(id) {
     if (gameState !== 'waiting') {
         showToast('Wait for next round!');
@@ -722,47 +687,27 @@ async function placeBet(id) {
     const autoVal = parseFloat(document.getElementById(`auto${id}`).value) || 2.0;
     
     if (amount < 10) return showToast('Min bet ₹10');
-    if (amount > balance) return showToast('Insufficient balance!');
+
+    // ✅ WALLET: Place bet through wallet.js
+    const success = await window.CasinoGame.placeBet(amount);
+    if (!success) return showToast('Insufficient balance!');
+
+    // ✅ Sync balance after bet deduction
+    syncBalance();
     
-    try {
-        const res = await fetch(`${API_BASE}/game/place-bet`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${userToken}`
-            },
-            body: JSON.stringify({
-                gameCode: 'aviator',
-                betAmount: amount
-            })
-        });
-        
-        const data = await res.json();
-        if (!data.success) {
-            showToast(data.message || 'Bet failed');
-            return;
-        }
-        
-        // Update balance
-        balance = data.newBalance || (balance - amount);
-        document.getElementById('topBalance').textContent = balance.toFixed(2);
-        
-        // Set bet state
-        bets[id] = {
-            active: true,
-            amount: amount,
-            cashed: false,
-            auto: autoVal
-        };
-        
-        document.getElementById(`btn${id}`).textContent = 'PLACED ✓';
-        document.getElementById(`btn${id}`).disabled = true;
-        
-    } catch (err) {
-        showToast('Network error!');
-    }
+    // Set bet state
+    bets[id] = {
+        active: true,
+        amount: amount,
+        cashed: false,
+        auto: autoVal
+    };
+    
+    document.getElementById(`btn${id}`).textContent = 'PLACED ✓';
+    document.getElementById(`btn${id}`).disabled = true;
 }
 
+// ✅ CHANGED: cashout now uses wallet.js
 async function cashout(id) {
     if (!bets[id].active || bets[id].cashed || gameState !== 'flying') return;
     
@@ -770,39 +715,18 @@ async function cashout(id) {
     bets[id].cashed = true;
     const winAmount = parseFloat((bets[id].amount * currentMultiplier).toFixed(2));
     
-    try {
-        const res = await fetch(`${API_BASE}/game/cashout`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${userToken}`
-            },
-            body: JSON.stringify({
-                gameCode: 'aviator',
-                betAmount: bets[id].amount,
-                winAmount: winAmount,
-                multiplier: currentMultiplier
-            })
-        });
-        
-        const data = await res.json();
-        if (data.success) {
-            balance = data.newBalance;
-            document.getElementById('topBalance').textContent = balance.toFixed(2);
-        }
-        
-        // Update UI
-        const btn = document.getElementById(`cash${id}`);
-        btn.textContent = `✓ ${currentMultiplier.toFixed(2)}x`;
-        btn.disabled = true;
-        btn.style.background = '#444';
-        
-        addLivePlayer(`You${id}`, bets[id].amount, winAmount);
-        soundManager.play('win');
-        
-    } catch (err) {
-        console.error('Cashout error:', err);
-    }
+    // ✅ WALLET: Report win through wallet.js
+    await window.CasinoGame.reportWin(winAmount);
+    syncBalance();
+    
+    // Update UI
+    const btn = document.getElementById(`cash${id}`);
+    btn.textContent = `✓ ${currentMultiplier.toFixed(2)}x`;
+    btn.disabled = true;
+    btn.style.background = '#444';
+    
+    addLivePlayer(`You${id}`, bets[id].amount, winAmount);
+    soundManager.play('win');
 }
 
 // ===== UI HELPERS =====
@@ -844,15 +768,12 @@ const fakeNames = ['Raj**', 'Amit88', 'Priya*', 'Vikram', 'Neha**', 'DemoKing', 
 let playerCount = 1542;
 
 setInterval(() => {
-    // Update count
     playerCount += Math.floor(Math.random() * 11) - 5;
     document.getElementById('playerCount').textContent = playerCount.toLocaleString();
     
-    // Add fake bet during flying
     if (gameState === 'flying' && Math.random() > 0.6) {
         const name = fakeNames[Math.floor(Math.random() * fakeNames.length)];
         const bet = [10, 20, 50, 100, 200, 500][Math.floor(Math.random() * 6)];
-        // Random cashout or loss
         setTimeout(() => {
             if (Math.random() > 0.7 && currentMultiplier < crashPoint) {
                 const win = Math.floor(bet * currentMultiplier);
@@ -864,10 +785,8 @@ setInterval(() => {
     }
 }, 2000);
 
-// ===== INIT =====
-fetchBalance();
+// ✅ INIT - Start game
 startWaiting();
-setInterval(fetchBalance, 5000); // Refresh balance every 5s
 </script>
 </body>
 </html>

@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Color Prediction - Diamond 11</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-    
+
+    <!-- ✅ WALLET INTEGRATION -->
+    <script src="../wallet.js"></script>
+
     <script>
     // ✅ SOUND SYSTEM
     const soundManager = {
@@ -29,35 +32,28 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 15px; padding-top: 60px; }
         
-        /* Top Bar */
         #topBar { position: fixed; top: 0; left: 0; right: 0; height: 50px; background: #151520; border-bottom: 2px solid var(--orange); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; z-index: 999; font-weight: 700; }
         .bal-top { color: var(--gold); font-size: 1.1rem; }
         
-        /* Main Box */
         .box { width: 100%; max-width: 420px; background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; padding: 20px; }
         
-        /* Poster */
         .poster { height: 100px; border-radius: 16px; background: linear-gradient(135deg, rgba(255,42,42,0.2), rgba(0,255,136,0.2)), url('colorpred-poster.jpg') center/cover; margin-bottom: 15px; position: relative; border: 1px solid var(--border); }
         .sound-btn { position: absolute; top: 10px; right: 10px; width: 38px; height: 38px; background: rgba(0,0,0,0.6); border: 1px solid var(--border); border-radius: 10px; display: grid; place-items: center; cursor: pointer; font-size: 1.1rem; }
         
-        /* Header */
         .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
         .logo { font-size: 1.3rem; font-weight: 900; background: linear-gradient(90deg, var(--green), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .bal { color: var(--green); font-weight: 700; font-size: 1.1rem; }
         
-        /* Game Info */
         .game-info { text-align: center; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 14px; margin-bottom: 15px; }
         .timer { font-size: 2.5rem; font-weight: 900; color: var(--gold); margin: 5px 0; animation: pulse 0.5s infinite; }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
         .round-num { font-size: 0.9rem; color: #8b9bb4; letter-spacing: 2px; }
         .result-display { font-size: 2rem; font-weight: 900; min-height: 40px; margin-top: 10px; text-shadow: 0 0 20px currentColor; }
         
-        /* Colors */
         .color-green { color: var(--green) !important; text-shadow: 0 0 30px var(--green) !important; }
         .color-red { color: var(--red) !important; text-shadow: 0 0 30px var(--red) !important; }
         .color-violet { color: var(--violet) !important; text-shadow: 0 0 30px var(--violet) !important; }
         
-        /* History */
         .history { display: flex; gap: 4px; overflow-x: auto; padding: 8px 0; margin-bottom: 15px; scrollbar-width: none; }
         .history::-webkit-scrollbar { display: none; }
         .h-item { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 0.7rem; }
@@ -66,7 +62,6 @@
         .h-violet { background: var(--violet); color: white; }
         .h-win { box-shadow: 0 0 10px currentColor; border: 2px solid white; }
         
-        /* Color Buttons */
         .color-bet { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
         .bet-btn { padding: 15px; border: 3px solid transparent; border-radius: 12px; cursor: pointer; transition: 0.2s; font-weight: 800; text-transform: uppercase; font-size: 1rem; position: relative; overflow: hidden; }
         .bet-btn.green { background: rgba(0,255,136,0.15); border-color: var(--green); color: var(--green); }
@@ -77,7 +72,6 @@
         .bet-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .payout { font-size: 0.65rem; opacity: 0.8; margin-top: 2px; }
         
-        /* Bet Amount */
         .bet-controls { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 15px; }
         .input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
         .input-row label { font-size: 0.75rem; color: #8b9bb4; min-width: 80px; }
@@ -87,26 +81,21 @@
         .quick-bets button { flex: 1; padding: 6px; background: rgba(255,255,255,0.06); border: none; border-radius: 6px; color: #aaa; font-size: 0.8rem; cursor: pointer; }
         .quick-bets button:hover { background: rgba(255,255,255,0.12); color: white; }
         
-        /* Submit Button */
         .submit-btn { width: 100%; padding: 16px; border: none; border-radius: 14px; background: linear-gradient(135deg, var(--orange), #ff6b00); color: black; font-weight: 900; font-size: 1.1rem; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 25px rgba(255,167,38,0.4); transition: 0.2s; }
         .submit-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 35px rgba(255,167,38,0.6); }
         .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         
-        /* Stats */
         .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; text-align: center; font-size: 0.75rem; }
         .stat { background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; }
         .stat .v { font-weight: 800; color: var(--gold); font-size: 1rem; }
         .stat .l { color: #8b9bb4; font-size: 0.6rem; margin-top: 2px; }
         
-        /* Toast */
         .toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-120px); background: rgba(0,0,0,0.95); border: 1px solid var(--orange); padding: 12px 24px; border-radius: 12px; font-weight: 600; z-index: 10000; transition: 0.3s; }
         .toast.show { transform: translateX(-50%) translateY(0); }
         
-        /* Live Players */
         .live-box { background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 10px; padding: 8px; margin-bottom: 12px; text-align: center; }
         .live-count { color: var(--green); font-weight: 800; font-size: 1rem; }
     </style>
-<script src="/games/wallet.js"></script>
 </head>
 <body>
 
@@ -114,42 +103,32 @@
 <div class="toast" id="toast"></div>
 
 <div class="box">
-    <!-- Poster -->
     <div class="poster"><button class="sound-btn" id="soundBtn" onclick="toggleSound()"><i class="fa-solid fa-volume-high"></i></button></div>
     
-    <!-- Header -->
     <div class="head"><div class="logo">🎨 COLOR PREDICTION</div><div class="bal">₹<span id="balance">0.00</span></div></div>
     
-    <!-- Live Count -->
     <div class="live-box"><span class="live-count">🟢 <span id="playerCount">1,842</span> Playing Live!</span></div>
     
-    <!-- Game Info -->
     <div class="game-info">
         <div class="round-num">ROUND #<span id="roundNum">2024001</span></div>
         <div class="timer" id="timer">8.00</div>
         <div class="result-display" id="resultText">PLACE YOUR BET</div>
     </div>
     
-    <!-- History -->
     <div class="history" id="history"></div>
     
-    <!-- Color Buttons -->
     <div class="color-bet">
         <button class="bet-btn green" id="btnGreen" onclick="selectColor('green')">
-            GREEN
-            <div class="payout">2×</div>
+            GREEN<div class="payout">2×</div>
         </button>
         <button class="bet-btn violet" id="btnViolet" onclick="selectColor('violet')">
-            VIOLET
-            <div class="payout">7×</div>
+            VIOLET<div class="payout">7×</div>
         </button>
         <button class="bet-btn red" id="btnRed" onclick="selectColor('red')">
-            RED
-            <div class="payout">2×</div>
+            RED<div class="payout">2×</div>
         </button>
     </div>
     
-    <!-- Bet Controls -->
     <div class="bet-controls">
         <div class="input-row">
             <label>BET AMOUNT</label>
@@ -165,10 +144,8 @@
         </div>
     </div>
     
-    <!-- Submit Button -->
     <button class="submit-btn" id="submitBtn" onclick="placeBet()">BET NOW</button>
     
-    <!-- Stats -->
     <div class="stats">
         <div class="stat"><div class="v" id="statWin">0</div><div class="l">WINS</div></div>
         <div class="stat"><div class="v" id="statLoss">0</div><div class="l">LOSSES</div></div>
@@ -177,42 +154,45 @@
 </div>
 
 <script>
-// ===== CONFIG =====
-const params = new URLSearchParams(location.search);
-const token = params.get('token');
-const API = 'https://diamond11-backend.onrender.com';
+// ✅ WALLET INTEGRATION - No more direct API calls
+// ❌ REMOVED: const token, const API
 
 // ===== STATE =====
 let balance = 0;
 let selectedColor = null;
-let gameState = 'waiting'; // waiting, revealing, result
+let betPlaced = false;
+let betAmount = 0;
+let gameState = 'waiting';
 let countdown = 8;
 let timerInterval = null;
 let roundId = Math.floor(Math.random() * 900000 + 100000);
 let history = [];
 let wins = 0, losses = 0, profit = 0;
 
-// Color weights for 40% win chance
 const COLORS = ['green', 'red', 'violet'];
-const WEIGHTS = { green: 35, red: 35, violet: 30 }; // 100 total
+const WEIGHTS = { green: 35, red: 35, violet: 30 };
 
 const submitBtn = document.getElementById('submitBtn');
 const timerEl = document.getElementById('timer');
 const resultText = document.getElementById('resultText');
 
-// ===== WALLET =====
-async function getBalance() {
-    if (!token) return;
-    try {
-        const r = await fetch(`${API}/wallet/balance`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const d = await r.json();
-        if (d.success) {
-            balance = d.data.balance || 0;
-            document.getElementById('balance').textContent = balance.toFixed(2);
-            document.getElementById('topBal').textContent = balance.toFixed(2);
-        }
-    } catch(e) {}
+// ✅ CHANGED: Balance now comes from wallet.js
+function syncBalance() {
+    balance = window.CasinoGame ? window.CasinoGame.balance : 0;
+    document.getElementById('balance').textContent = balance.toFixed(2);
+    document.getElementById('topBal').textContent = balance.toFixed(2);
 }
+
+// ✅ Wait for wallet to initialize
+function waitForWallet() {
+    if (window.CasinoGame && window.CasinoGame.balance !== undefined) {
+        syncBalance();
+        setInterval(syncBalance, 2000);
+    } else {
+        setTimeout(waitForWallet, 500);
+    }
+}
+waitForWallet();
 
 // ===== COLOR SELECTION =====
 window.selectColor = (c) => {
@@ -220,37 +200,44 @@ window.selectColor = (c) => {
     soundManager.play('click');
     selectedColor = c;
     ['green', 'red', 'violet'].forEach(color => {
-        document.getElementById(`btn${color === 'violet' ? 'Violet' : color.charAt(0).toUpperCase() + color.slice(1)}`).classList.remove('active');
+        const id = color === 'violet' ? 'btnViolet' : `btn${color.charAt(0).toUpperCase() + color.slice(1)}`;
+        document.getElementById(id).classList.remove('active');
     });
-    document.getElementById(`btn${c === 'violet' ? 'Violet' : c.charAt(0).toUpperCase() + c.slice(1)}`).classList.add('active');
+    const selId = c === 'violet' ? 'btnViolet' : `btn${c.charAt(0).toUpperCase() + c.slice(1)}`;
+    document.getElementById(selId).classList.add('active');
 };
 
-// ===== QUICK BET =====
+// ✅ CHANGED: quickBet uses wallet balance
 window.quickBet = (v) => {
     soundManager.play('click');
     const inp = document.getElementById('betInput');
+    const walletBal = window.CasinoGame ? window.CasinoGame.balance : 0;
     if (v === 'half') inp.value = Math.max(10, Math.floor(+inp.value / 2));
-    else if (v === 'double') inp.value = Math.min(balance, Math.floor(+inp.value * 2));
+    else if (v === 'double') inp.value = Math.min(walletBal, Math.floor(+inp.value * 2));
     else inp.value = v;
 };
 
-// ===== MAIN GAME LOOP =====
+// ===== GAME LOOP =====
 function startGameLoop() {
-    // Betting phase (8 seconds)
     gameState = 'waiting';
     countdown = 8;
+    betPlaced = false;
+    betAmount = 0;
+    selectedColor = null;
+
+    // Reset color buttons active state
+    ['btnGreen', 'btnViolet', 'btnRed'].forEach(id => {
+        document.getElementById(id).classList.remove('active');
+        document.getElementById(id).disabled = false;
+    });
+
     timerEl.className = 'timer';
     resultText.textContent = 'PLACE YOUR BET';
     resultText.style.color = 'var(--gold)';
     resultText.style.textShadow = '';
     submitBtn.disabled = false;
     submitBtn.textContent = 'BET NOW';
-    
-    [1, 2, 3].forEach((_, i) => {
-        const btn = document.querySelectorAll('.bet-btn')[i];
-        if(btn) btn.disabled = false;
-    });
-    
+
     timerInterval = setInterval(() => {
         countdown -= 0.05;
         timerEl.textContent = Math.max(0, countdown).toFixed(2);
@@ -261,18 +248,16 @@ function startGameLoop() {
     }, 50);
 }
 
-// Reveal Winner
 async function revealResult() {
     gameState = 'revealing';
     countdown = 0;
     timerEl.textContent = 'REVEALING...';
     submitBtn.disabled = true;
-    [1, 2, 3].forEach((_, i) => {
-        const btn = document.querySelectorAll('.bet-btn')[i];
-        if(btn) btn.disabled = true;
+    ['btnGreen', 'btnViolet', 'btnRed'].forEach(id => {
+        document.getElementById(id).disabled = true;
     });
-    
-    // Show spinning animation
+
+    // Spin animation
     let spinCount = 0;
     const spin = setInterval(() => {
         const randColor = COLORS[Math.floor(Math.random() * COLORS.length)];
@@ -286,84 +271,64 @@ async function revealResult() {
     }, 100);
 }
 
-// ✅ 40% WIN / 60% LOSS LOGIC
+// ✅ CHANGED: finalizeResult uses wallet.js placeBet & reportWin
 async function finalizeResult() {
-    const willWin = Math.random() < 0.40; // 40% winning chance
-    
-    // Generate result color with weights
+    // ✅ 40% WIN / 60% LOSS LOGIC
+    const willWin = Math.random() < 0.40;
+
     let randomNum = Math.random() * 100;
     let winningColor = 'red';
     if (randomNum < WEIGHTS.green) winningColor = 'green';
     else if (randomNum < WEIGHTS.green + WEIGHTS.red) winningColor = 'red';
     else winningColor = 'violet';
-    
+
     // Force loss if not winning round
     if (!willWin && selectedColor) {
-        // Make sure selectedColor doesn't match
         const losers = COLORS.filter(c => c !== selectedColor);
         winningColor = losers[Math.floor(Math.random() * losers.length)];
     }
-    
+
     resultText.className = `result-display color-${winningColor}`;
     resultText.textContent = `${winningColor.toUpperCase()}!`;
-    
-    const bet = parseFloat(document.getElementById('betInput').value) || 10;
-    const isWinner = selectedColor === winningColor;
-    
+
+    const bet = betPlaced ? betAmount : 0;
+    const isWinner = betPlaced && (selectedColor === winningColor);
+
     // Add to history
-    history.unshift({ color: winningColor, win: isWinner, amount: selectedColor ? bet : 0 });
+    history.unshift({ color: winningColor, win: isWinner, amount: bet });
     if (history.length > 20) history.pop();
     updateHistory();
-    
-    if (selectedColor) {
-        try {
-            // Place bet
-            const r = await fetch(`${API}/game/place-bet`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ gameCode: 'colorprediction', betAmount: bet })
-            });
-            const d = await r.json();
-            if (d.success) {
-                balance = d.newBalance;
-                getBalance();
-                
-                if (isWinner) {
-                    // WIN
-                    const multiplier = winningColor === 'violet' ? 7 : 2;
-                    const winAmount = bet * multiplier;
-                    profit += (winAmount - bet);
-                    wins++;
-                    
-                    // Cashout
-                    await fetch(`${API}/game/cashout`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                        body: JSON.stringify({ gameCode: 'colorprediction', betAmount: bet, winAmount, multiplier })
-                    });
-                    
-                    soundManager.play('win');
-                    resultText.textContent = `${winningColor.toUpperCase()}! YOU WIN ₹${winAmount}`;
-                    showToast(`🎉 Won ₹${winAmount}!`);
-                } else {
-                    // LOSS
-                    profit -= bet;
-                    losses++;
-                    soundManager.play('lose');
-                    resultText.textContent = `${winningColor.toUpperCase()}! YOU LOSE`;
-                    showToast(`💸 Lost ₹${bet}`);
-                }
-                updateStats();
-            }
-        } catch(e) {
-            console.error('Game error:', e);
+
+    if (betPlaced) {
+        if (isWinner) {
+            // ✅ WIN
+            const multiplier = winningColor === 'violet' ? 7 : 2;
+            const winAmount = parseFloat((bet * multiplier).toFixed(2));
+            profit += (winAmount - bet);
+            wins++;
+
+            // ✅ WALLET: Report win
+            await window.CasinoGame.reportWin(winAmount);
+            syncBalance();
+
+            soundManager.play('win');
+            resultText.textContent = `${winningColor.toUpperCase()}! WIN ₹${winAmount}`;
+            showToast(`🎉 Won ₹${winAmount}!`);
+        } else {
+            // ✅ LOSS (bet already deducted in placeBet)
+            profit -= bet;
+            losses++;
+            soundManager.play('lose');
+            resultText.textContent = `${winningColor.toUpperCase()}! YOU LOSE`;
+            showToast(`💸 Lost ₹${bet}`);
         }
+        updateStats();
+        syncBalance();
     } else {
         // No bet placed
-        soundManager.play('win'); // Just play sound, no money involved
         resultText.textContent = `${winningColor.toUpperCase()}!`;
     }
-    
+
     // Next round
     setTimeout(() => {
         roundId++;
@@ -372,15 +337,26 @@ async function finalizeResult() {
     }, 4000);
 }
 
-// ===== HELPERS =====
-window.placeBet = () => {
+// ✅ CHANGED: placeBet now uses wallet.js immediately on button click
+window.placeBet = async () => {
     if (gameState !== 'waiting') return showToast('Waiting for next round!');
     if (!selectedColor) return showToast('Select a color first!');
+    if (betPlaced) return showToast('Bet already placed!');
+
     const bet = parseFloat(document.getElementById('betInput').value) || 10;
     if (bet < 10) return showToast('Min bet ₹10');
-    if (bet > balance) return showToast('Low balance!');
+
+    // ✅ WALLET: Deduct bet immediately
+    const success = await window.CasinoGame.placeBet(bet);
+    if (!success) return showToast('Low balance!');
+
+    // Save bet details for result
+    betPlaced = true;
+    betAmount = bet;
+    syncBalance();
+
     soundManager.play('click');
-    showToast(`✓ Bet Placed on ${selectedColor.toUpperCase()}!`);
+    showToast(`✓ ₹${bet} on ${selectedColor.toUpperCase()}!`);
     submitBtn.disabled = true;
     submitBtn.textContent = 'BET PLACED ✓';
 };
@@ -409,17 +385,15 @@ function showToast(msg) {
     setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// FAKE PLAYERS
+// Fake Players
 let playerCount = 1842;
 setInterval(() => {
     playerCount += Math.floor(Math.random() * 11) - 5;
     document.getElementById('playerCount').textContent = playerCount.toLocaleString();
 }, 2000);
 
-// INIT
-getBalance();
+// ✅ INIT
 startGameLoop();
-setInterval(getBalance, 5000);
 </script>
 </body>
 </html>

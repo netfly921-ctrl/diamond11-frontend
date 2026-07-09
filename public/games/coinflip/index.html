@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Coin Flip - Diamond 11</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-    
+
+    <!-- ✅ WALLET INTEGRATION -->
+    <script src="../wallet.js"></script>
+
     <script>
     // SOUND SYSTEM
     const soundManager = {
@@ -67,7 +70,6 @@
         .stat { background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; } .stat .v { font-weight: 800; color: var(--gold); font-size: 1rem; } .stat .l { color: #8b9bb4; font-size: 0.65rem; margin-top: 2px; }
         .toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-120px); background: rgba(0,0,0,0.95); border: 1px solid var(--gold); padding: 12px 24px; border-radius: 12px; font-weight: 600; z-index: 1000; transition: 0.3s; } .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
-<script src="/games/wallet.js"></script>
 </head>
 <body>
     <div id="topBar"><div><i class="fa-solid fa-coins"></i> COIN FLIP</div><div class="bal-top">₹<span id="topBal">0.00</span></div></div>
@@ -85,20 +87,49 @@
     </div>
 
     <script>
-        const params = new URLSearchParams(location.search); const token = params.get('token'); const API = 'https://diamond11-backend.onrender.com';
+        // ✅ WALLET INTEGRATION - No more direct API calls
         let balance = 0, choice = null, flipping = false, wins = 0, losses = 0, profit = 0, history = [];
         const coin = document.getElementById('coin'), resultText = document.getElementById('resultText'), flipBtn = document.getElementById('flipBtn');
 
-        async function getBalance() { if (!token) return; try { const r = await fetch(`${API}/wallet/balance`, { headers: { 'Authorization': `Bearer ${token}` } }); const d = await r.json(); if (d.success) { balance = d.data.balance || 0; document.getElementById('balance').textContent = balance.toFixed(2); document.getElementById('topBal').textContent = balance.toFixed(2); } } catch(e) {} }
-        window.selectChoice = (c) => { if (flipping) return; soundManager.play('click'); choice = c; document.getElementById('btnHeads').classList.toggle('active', c === 'heads'); document.getElementById('btnTails').classList.toggle('active', c === 'tails'); resultText.textContent = `You picked ${c.toUpperCase()}`; resultText.className = 'result-text'; };
-        window.quickBet = (v) => { soundManager.play('click'); const inp = document.getElementById('betInput'); if (v === 'half') inp.value = Math.max(10, Math.floor(+inp.value / 2)); else if (v === 'double') inp.value = Math.min(balance, Math.floor(+inp.value * 2)); else inp.value = v; };
+        // ✅ CHANGED: Balance now comes from wallet.js
+        function syncBalance() {
+            balance = window.CasinoGame ? window.CasinoGame.balance : 0;
+            document.getElementById('balance').textContent = balance.toFixed(2);
+            document.getElementById('topBal').textContent = balance.toFixed(2);
+        }
 
+        // ✅ Wait for wallet to initialize, then sync balance
+        function waitForWallet() {
+            if (window.CasinoGame && window.CasinoGame.balance !== undefined) {
+                syncBalance();
+                // Keep syncing every 2 seconds
+                setInterval(syncBalance, 2000);
+            } else {
+                setTimeout(waitForWallet, 500);
+            }
+        }
+        waitForWallet();
+
+        window.selectChoice = (c) => { if (flipping) return; soundManager.play('click'); choice = c; document.getElementById('btnHeads').classList.toggle('active', c === 'heads'); document.getElementById('btnTails').classList.toggle('active', c === 'tails'); resultText.textContent = `You picked ${c.toUpperCase()}`; resultText.className = 'result-text'; };
+
+        // ✅ CHANGED: quickBet uses wallet balance
+        window.quickBet = (v) => { soundManager.play('click'); const inp = document.getElementById('betInput'); const walletBal = window.CasinoGame ? window.CasinoGame.balance : 0; if (v === 'half') inp.value = Math.max(10, Math.floor(+inp.value / 2)); else if (v === 'double') inp.value = Math.min(walletBal, Math.floor(+inp.value * 2)); else inp.value = v; };
+
+        // ✅ CHANGED: doFlip now uses wallet.js placeBet & reportWin
         window.doFlip = async () => {
             if (flipping || !choice) return showToast(choice ? 'Wait...' : 'Pick Heads or Tails!');
             const bet = parseFloat(document.getElementById('betInput').value) || 10;
-            if (bet < 10) return showToast('Min bet ₹10'); if (bet > balance) return showToast('Low balance!');
+            if (bet < 10) return showToast('Min bet ₹10');
+
+            // ✅ WALLET: Place bet through wallet.js
+            const success = await window.CasinoGame.placeBet(bet);
+            if (!success) return showToast('Low balance!');
+
             flipping = true; flipBtn.disabled = true; document.getElementById('btnHeads').disabled = true; document.getElementById('btnTails').disabled = true; soundManager.play('click');
-            try { const r = await fetch(`${API}/game/place-bet`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ gameCode: 'coinflip', betAmount: bet }) }); const d = await r.json(); if (!d.success) throw 0; balance = d.newBalance; getBalance(); } catch(e) { flipping = false; flipBtn.disabled = false; document.getElementById('btnHeads').disabled = false; document.getElementById('btnTails').disabled = false; return showToast('Bet failed!'); }
+
+            // ✅ Sync balance after bet deduction
+            syncBalance();
+
             resultText.textContent = 'FLIPPING...'; resultText.className = 'result-text flip'; coin.classList.add('flipping');
             
             // ✅ 40% WIN / 60% LOSS
@@ -114,10 +145,14 @@
                 if (isWin) {
                     const winAmount = bet * 1.95; profit += (winAmount - bet); wins++;
                     resultText.textContent = `${result.toUpperCase()}! YOU WIN ₹${winAmount.toFixed(0)}`; resultText.className = 'result-text win'; soundManager.play('win'); showToast(`🎉 Won ₹${winAmount.toFixed(0)}!`);
-                    try { await fetch(`${API}/game/cashout`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ gameCode: 'coinflip', betAmount: bet, winAmount, multiplier: 1.95 }) }); getBalance(); } catch(e) {}
+
+                    // ✅ WALLET: Report win through wallet.js
+                    await window.CasinoGame.reportWin(winAmount);
+                    syncBalance();
                 } else {
                     profit -= bet; losses++;
                     resultText.textContent = `${result.toUpperCase()}! YOU LOSE`; resultText.className = 'result-text lose'; soundManager.play('lose'); showToast(`💸 Lost ₹${bet}`);
+                    syncBalance();
                 }
                 updateStats();
             }, 2600);
@@ -126,7 +161,9 @@
         function updateHistory() { const h = document.getElementById('history'); h.innerHTML = ''; history.forEach(item => { const d = document.createElement('div'); d.className = `h-item h-${item.result}`; d.textContent = item.result === 'heads' ? 'H' : 'T'; d.style.opacity = item.win ? '1' : '0.5'; h.appendChild(d); }); }
         function updateStats() { document.getElementById('statWin').textContent = wins; document.getElementById('statLoss').textContent = losses; document.getElementById('statProfit').textContent = (profit >= 0 ? '+' : '') + '₹' + profit.toFixed(0); }
         function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
-        getBalance(); setInterval(getBalance, 5000); selectChoice('heads');
+
+        // ✅ Initial choice
+        selectChoice('heads');
     </script>
 </body>
 </html>
