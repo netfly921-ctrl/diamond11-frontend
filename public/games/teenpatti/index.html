@@ -137,6 +137,7 @@
     window.toggleSound=()=>{ soundManager.enabled=!soundManager.enabled; localStorage.setItem('D11_SOUND', soundManager.enabled?'1':'0'); soundManager.updateBtn(); soundManager.play('click'); };
     window.addEventListener('load', ()=>soundManager.init());
   </script>
+<script src="/games/wallet.js"></script>
 </head>
 <body>
   <div id="topBar">
