@@ -1,25 +1,33 @@
 // 🎮 Diamond 11 - Games Wallet Integration
-// Ye file automatically wallet balance manage karti hai
+// Sirf games ke andar chalega, home/login page pe nahi
 
 (function() {
   'use strict';
+
+  // ✅ Check karo ye games folder ke andar hai ya nahi
+  const isGamePage = window.location.pathname.includes('/games/');
+  
+  // ❌ Agar game page nahi hai to kuch mat karo
+  if (!isGamePage) {
+    console.log('Not a game page, wallet.js skipped');
+    return;
+  }
 
   const API_URL = 'https://diamond11-backend.onrender.com/api';
   const token = localStorage.getItem('token');
 
   // ❌ Agar login nahi hai to redirect
   if (!token) {
-    alert('Please login first to play!');
-    window.location.href = '/login';
+    console.warn('User not logged in - wallet features disabled');
+    // Alert hatao, redirect hatao - game khelne do
     return;
   }
 
-  // 🌍 Global Wallet Object (Har game use kar sakta hai)
+  // 🌍 Global Wallet Object
   window.DiamondWallet = {
     balance: 0,
     token: token,
 
-    // 💰 Get Current Balance
     async getBalance() {
       try {
         const res = await fetch(`${API_URL}/wallet/balance`, {
@@ -35,7 +43,6 @@
       }
     },
 
-    // 🎲 Place Bet (Deduct Amount)
     async placeBet(amount, gameName = 'game') {
       if (this.balance < amount) {
         alert('Insufficient balance! Please deposit money.');
@@ -63,14 +70,12 @@
         }
       } catch (err) {
         console.error('Bet error:', err);
-        // Fallback: deduct locally
         this.balance -= amount;
         this.updateUI();
         return true;
       }
     },
 
-    // 🏆 Add Winning Amount
     async addWinning(amount, gameName = 'game') {
       try {
         const res = await fetch(`${API_URL}/wallet/win`, {
@@ -94,18 +99,13 @@
       }
     },
 
-    // 🎨 Update UI (Balance Show)
     updateUI() {
-      // Multiple ID names try karo (har game me alag ho sakta)
       const ids = ['balance', 'wallet-balance', 'user-balance', 'current-balance', 'walletBalance'];
       ids.forEach(id => {
         const el = document.getElementById(id);
-        if (el) {
-          el.textContent = `₹${this.balance.toFixed(2)}`;
-        }
+        if (el) el.textContent = `₹${this.balance.toFixed(2)}`;
       });
 
-      // Class ke through bhi try karo
       const classes = ['balance', 'wallet-balance', 'user-balance'];
       classes.forEach(cls => {
         document.querySelectorAll(`.${cls}`).forEach(el => {
@@ -113,9 +113,7 @@
         });
       });
 
-      // Login button ko balance se replace karo
-      const loginBtns = document.querySelectorAll('button, a, span, div');
-      loginBtns.forEach(el => {
+      document.querySelectorAll('button, a, span, div').forEach(el => {
         if (el.textContent.trim() === '₹Login' || el.textContent.trim() === 'Login') {
           el.textContent = `₹${this.balance.toFixed(2)}`;
           el.style.color = '#ffd700';
@@ -124,7 +122,6 @@
       });
     },
 
-    // 🎉 Win Popup
     showWinPopup(amount) {
       const popup = document.createElement('div');
       popup.style.cssText = `
@@ -140,39 +137,24 @@
         font-weight: bold;
         z-index: 9999;
         box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        animation: winPop 0.5s ease-out;
       `;
       popup.innerHTML = `🎉 You Won ₹${amount}! 🎉`;
       document.body.appendChild(popup);
       setTimeout(() => popup.remove(), 2500);
     },
 
-    // 🚪 Back to Home
     goHome() {
       window.location.href = '/';
     }
   };
 
-  // 🎬 Auto-fetch balance on page load
   window.addEventListener('DOMContentLoaded', () => {
     window.DiamondWallet.getBalance();
     console.log('✅ Diamond Wallet Loaded!');
   });
 
-  // 🔄 Refresh balance every 30 seconds
   setInterval(() => {
     window.DiamondWallet.getBalance();
   }, 30000);
-
-  // 🎨 Animation CSS
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes winPop {
-      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-      50% { transform: translate(-50%, -50%) scale(1.2); }
-      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    }
-  `;
-  document.head.appendChild(style);
 
 })();
