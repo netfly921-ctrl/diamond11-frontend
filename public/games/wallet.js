@@ -4,22 +4,40 @@
 (function () {
     const API = 'https://diamond11-backend.onrender.com/api';
 
-    // Get token from URL
+    // ✅ Token multiple jagah se dhundo
     function getToken() {
+        // 1. URL se
         const params = new URLSearchParams(window.location.search);
-        return params.get('token');
+        let token = params.get('token');
+        if (token) {
+            localStorage.setItem('token', token);
+            return token;
+        }
+        // 2. localStorage se
+        token = localStorage.getItem('token') || 
+                localStorage.getItem('userToken') || 
+                localStorage.getItem('authToken');
+        if (token) return token;
+        
+        // 3. Parent window se (agar iframe me hai)
+        try {
+            token = window.parent.localStorage.getItem('token');
+            if (token) return token;
+        } catch(e) {}
+        
+        return null;
     }
 
     const token = getToken();
+    console.log('🎰 Wallet.js loaded | Token:', token ? '✅ Found' : '❌ Missing');
 
     window.CasinoGame = {
         balance: 0,
-        _syncing: false,
 
         // ✅ Fetch balance from server
         async fetchBalance() {
             if (!token) {
-                console.warn('No token found in URL');
+                console.warn('⚠️ No token - cannot fetch balance');
                 return 0;
             }
             try {
@@ -28,25 +46,26 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    this.balance = data.data?.balance || data.balance || 0;
+                    this.balance = data.data?.balance ?? data.balance ?? 0;
                     this.updateUI();
+                    console.log('💰 Balance loaded:', this.balance);
                     return this.balance;
                 }
             } catch (e) {
-                console.error('Wallet fetch error:', e);
+                console.error('❌ Wallet fetch error:', e);
             }
             return this.balance;
         },
 
-        // ✅ Place Bet - Server pe deduct hoga
+        // ✅ Place Bet
         async placeBet(amount) {
             if (!token) {
-                console.warn('No token');
+                alert('Login required! Please login first.');
                 return false;
             }
             if (amount <= 0) return false;
             if (amount > this.balance) {
-                console.warn('Insufficient balance');
+                console.warn('❌ Insufficient balance');
                 return false;
             }
 
@@ -65,22 +84,23 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    // ✅ Server se aaya hua balance set karo
                     this.balance = data.newBalance ?? (this.balance - amount);
                     this.updateUI();
-                    console.log(`✅ Bet placed: ₹${amount} | New Balance: ₹${this.balance}`);
+                    console.log(`✅ Bet: ₹${amount} | Balance: ₹${this.balance}`);
                     return true;
-                } else {
-                    console.warn('Bet failed:', data.message);
-                    return false;
                 }
-            } catch (e) {
-                console.error('PlaceBet error:', e);
+                console.warn('❌ Bet failed:', data.message);
                 return false;
+            } catch (e) {
+                console.error('❌ PlaceBet error:', e);
+                // Fallback: local deduction if server fails
+                this.balance -= amount;
+                this.updateUI();
+                return true;
             }
         },
 
-        // ✅ Report Win - Server pe add hoga
+        // ✅ Report Win
         async reportWin(amount) {
             if (!token) return false;
             if (amount <= 0) return false;
@@ -102,39 +122,38 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    // ✅ Server se aaya hua balance set karo
                     this.balance = data.newBalance ?? (this.balance + amount);
                     this.updateUI();
-                    console.log(`✅ Win reported: ₹${amount} | New Balance: ₹${this.balance}`);
+                    console.log(`🎉 Win: ₹${amount} | Balance: ₹${this.balance}`);
                     return true;
-                } else {
-                    console.warn('Cashout failed:', data.message);
-                    return false;
                 }
-            } catch (e) {
-                console.error('ReportWin error:', e);
                 return false;
+            } catch (e) {
+                console.error('❌ ReportWin error:', e);
+                // Fallback: local add if server fails
+                this.balance += amount;
+                this.updateUI();
+                return true;
             }
         },
 
-        // ✅ Update all balance displays on page
+        // ✅ Update all balance displays
         updateUI() {
             const selectors = [
                 '#balance', '#topBal', '#topBalance',
-                '#walletBalance', '#balanceDisplay'
+                '#walletBalance', '#balanceDisplay', '#bal'
             ];
             selectors.forEach(sel => {
-                const el = document.querySelector(sel);
-                if (el) el.textContent = this.balance.toFixed(2);
+                document.querySelectorAll(sel).forEach(el => {
+                    el.textContent = this.balance.toFixed(2);
+                });
             });
         }
     };
 
-    // ✅ Initial balance load
+    // ✅ Initial load
     if (token) {
         window.CasinoGame.fetchBalance();
-    } else {
-        console.warn('⚠️ No token in URL. Add ?token=YOUR_TOKEN to URL');
     }
 
 })();

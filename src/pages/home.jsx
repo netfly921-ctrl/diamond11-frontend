@@ -5,25 +5,33 @@ import { FaSyncAlt, FaHome, FaGift, FaWallet, FaUser } from "react-icons/fa";
 
 const API_URL = "https://diamond11-backend.onrender.com";
 
-// ✅ SMART URL GENERATOR (Case sensitivity fix)
+// ✅ SMART URL GENERATOR + TOKEN PASS (FIXED)
 function getPlayUrl(game) {
   let code = game.code ? game.code.toLowerCase() : "";
-  
+
   // Special case for CHICKEN PRO (space wala folder)
   if (code === "chickenpro") code = "CHICKEN PRO";
 
   // Agar MongoDB mein gameUrl hai toh use karo, warna code se banao
   let url = game.gameUrl || game.path || `/games/${code}/index.html`;
-  
+
   // Ensure URL lowercase hai (except CHICKEN PRO)
   if (code !== "CHICKEN PRO") {
     url = url.toLowerCase();
   }
 
-  if (url.endsWith(".html")) return encodeURI(url);
-  if (!url.endsWith("/")) url += "/";
-  url += "index.html";
-  
+  // Ensure URL ends with index.html
+  if (!url.endsWith(".html")) {
+    if (!url.endsWith("/")) url += "/";
+    url += "index.html";
+  }
+
+  // ✅ FIXED: Token URL me pass karo (wallet.js ke liye)
+  const token = localStorage.getItem("token");
+  if (token && !url.includes("token=")) {
+    url += (url.includes("?") ? "&" : "?") + "token=" + token;
+  }
+
   return encodeURI(url);
 }
 
@@ -180,6 +188,7 @@ const Home = () => {
           <div className="grid grid-cols-3 gap-y-5 gap-x-3">
             {games.map((game) => {
               const img = getImageUrl(game);
+              // ✅ Token ke saath URL banega
               const playUrl = getPlayUrl(game);
 
               return (
