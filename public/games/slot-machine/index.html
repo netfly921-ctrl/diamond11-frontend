@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lucky Slots - Diamond 11</title>
     
     <script src="../wallet.js"></script>
@@ -39,7 +39,7 @@
         .slot-machine {
             background: linear-gradient(180deg, #ffd700, #ff8c00);
             border-radius: 30px;
-            padding: 30px;
+            padding: 25px;
             box-shadow: 
                 0 20px 60px rgba(0,0,0,0.5),
                 inset 0 -8px 15px rgba(0,0,0,0.3),
@@ -50,10 +50,10 @@
         
         .slot-title {
             text-align: center;
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 900;
             color: #4a0e00;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-shadow: 2px 2px 0 #fff;
             letter-spacing: 2px;
         }
@@ -65,19 +65,19 @@
             display: flex;
             gap: 10px;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             box-shadow: inset 0 5px 15px rgba(0,0,0,0.8);
         }
         
         .reel {
-            width: 90px;
-            height: 90px;
+            width: 85px;
+            height: 85px;
             background: linear-gradient(180deg, #fff, #ddd);
             border-radius: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 3.5rem;
+            font-size: 3rem;
             box-shadow: inset 0 -3px 8px rgba(0,0,0,0.3);
             overflow: hidden;
             position: relative;
@@ -105,8 +105,8 @@
         .info-display {
             background: #000;
             border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
+            padding: 12px;
+            margin-bottom: 15px;
             text-align: center;
         }
         
@@ -115,8 +115,6 @@
             justify-content: space-around;
             color: #ffd700;
             font-weight: 800;
-            font-size: 1rem;
-            letter-spacing: 1px;
         }
         
         .info-row div {
@@ -126,30 +124,32 @@
         }
         
         .info-row .label {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .info-row .value {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
         
         .bet-controls {
-            display: flex;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
             margin-bottom: 15px;
         }
         
         .bet-btn {
-            flex: 1;
-            padding: 12px;
+            padding: 10px 5px;
             background: #4a0e00;
             color: #ffd700;
             border: 2px solid #8b4513;
             border-radius: 8px;
             font-weight: 800;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             transition: 0.2s;
         }
         
@@ -161,16 +161,17 @@
         .bet-btn.active {
             background: #ff6b00;
             color: white;
+            box-shadow: 0 0 15px rgba(255,107,0,0.5);
         }
         
         .spin-btn {
             width: 100%;
-            padding: 20px;
+            padding: 18px;
             background: linear-gradient(180deg, #ff0000, #8b0000);
             color: white;
             border: 4px solid #ffd700;
             border-radius: 50px;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 900;
             letter-spacing: 3px;
             cursor: pointer;
@@ -192,22 +193,34 @@
         
         .result-msg {
             text-align: center;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 800;
-            margin-top: 15px;
-            min-height: 30px;
+            margin-top: 12px;
+            min-height: 28px;
             color: #4a0e00;
             text-shadow: 1px 1px 0 #fff;
         }
         
         .result-msg.win {
             color: #00aa00;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             animation: winText 0.5s ease-out;
+        }
+        
+        .result-msg.jackpot {
+            color: #ff0088;
+            font-size: 1.6rem;
+            animation: jackpot 1s ease-out;
         }
         
         @keyframes winText {
             0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes jackpot {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.5); }
             100% { transform: scale(1); opacity: 1; }
         }
         
@@ -222,6 +235,32 @@
         @keyframes fallCoin {
             0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .stat-mini {
+            background: #000;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-mini .lbl {
+            color: #888;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+        }
+        
+        .stat-mini .val {
+            color: #ffd700;
+            font-weight: 800;
+            font-size: 1rem;
         }
     </style>
 </head>
@@ -248,24 +287,35 @@
                 <span class="value">₹<span id="currentBet">10</span></span>
             </div>
             <div>
-                <span class="label">WIN</span>
+                <span class="label">LAST WIN</span>
                 <span class="value">₹<span id="lastWin">0</span></span>
             </div>
         </div>
     </div>
     
     <div class="bet-controls">
-        <button class="bet-btn" onclick="setBet(10)">₹10</button>
-        <button class="bet-btn" onclick="setBet(50)">₹50</button>
-        <button class="bet-btn" onclick="setBet(100)">₹100</button>
-        <button class="bet-btn" onclick="setBet(500)">₹500</button>
+        <button class="bet-btn active" onclick="setBet(10)" data-amount="10">₹10</button>
+        <button class="bet-btn" onclick="setBet(50)" data-amount="50">₹50</button>
+        <button class="bet-btn" onclick="setBet(100)" data-amount="100">₹100</button>
+        <button class="bet-btn" onclick="setBet(500)" data-amount="500">₹500</button>
     </div>
     
     <button class="spin-btn" id="spinBtn" onclick="spin()">
         🎰 SPIN 🎰
     </button>
     
-    <div class="result-msg" id="resultMsg">Choose bet & SPIN!</div>
+    <div class="result-msg" id="resultMsg">Press SPIN to play!</div>
+    
+    <div class="stats-row">
+        <div class="stat-mini">
+            <div class="lbl">Total Spins</div>
+            <div class="val" id="totalSpins">0</div>
+        </div>
+        <div class="stat-mini">
+            <div class="lbl">Total Wins</div>
+            <div class="val" id="totalWins">0</div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -273,17 +323,30 @@
 let balance = 0;
 let currentBet = 10;
 let isSpinning = false;
+let totalSpins = 0;
+let totalWins = 0;
 
+// ============================================
+// ✅ WIN RATE CONFIGURATION: 10% WIN / 90% LOSS
+// ============================================
+const WIN_PROBABILITY = 0.10; // 10% chance to win
+const JACKPOT_PROBABILITY = 0.02; // 2% chance for jackpot (within win)
+
+// Symbols with their payouts
 const symbols = ['🍒', '🍋', '🍇', '🔔', '⭐', '💎', '7️⃣'];
 const payouts = {
-    '🍒': 2,
-    '🍋': 3,
-    '🍇': 5,
-    '🔔': 10,
-    '⭐': 20,
-    '💎': 50,
-    '7️⃣': 100
+    '🍒': 2,     // 2x - common
+    '🍋': 3,     // 3x - common
+    '🍇': 5,     // 5x - medium
+    '🔔': 10,    // 10x - rare
+    '⭐': 20,    // 20x - rare
+    '💎': 50,    // 50x - very rare
+    '7️⃣': 100   // 100x - JACKPOT
 };
+
+// Weighted symbol probability (for losses - non-matching)
+const commonSymbols = ['🍒', '🍋', '🍇', '🔔'];
+const rareSymbols = ['⭐', '💎', '7️⃣'];
 
 function syncBalance() {
     balance = window.CasinoGame ? window.CasinoGame.balance : 0;
@@ -303,7 +366,13 @@ function setBet(amount) {
     if (isSpinning) return;
     currentBet = amount;
     document.getElementById('currentBet').textContent = amount;
-    document.getElementById('resultMsg').textContent = `Bet set to ₹${amount}`;
+    
+    // Update active button
+    document.querySelectorAll('.bet-btn').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.amount) === amount);
+    });
+    
+    document.getElementById('resultMsg').textContent = `Bet: ₹${amount}`;
 }
 
 async function spin() {
@@ -318,69 +387,103 @@ async function spin() {
     syncBalance();
     
     isSpinning = true;
+    totalSpins++;
+    document.getElementById('totalSpins').textContent = totalSpins;
     document.getElementById('spinBtn').disabled = true;
     document.getElementById('resultMsg').textContent = '🎰 Spinning...';
+    document.getElementById('resultMsg').className = 'result-msg';
+    
+    // Remove win effects
+    ['reel1', 'reel2', 'reel3'].forEach(id => {
+        document.getElementById(id).classList.remove('win');
+    });
+    
+    // ============================================
+    // ✅ 10% WIN / 90% LOSS LOGIC
+    // ============================================
+    const willWin = Math.random() < WIN_PROBABILITY;
+    let finalSymbols;
+    
+    if (willWin) {
+        // 10% chance - WIN (all 3 same)
+        const isJackpot = Math.random() < JACKPOT_PROBABILITY;
+        
+        let winSymbol;
+        if (isJackpot) {
+            // Jackpot symbols (7 or Diamond)
+            winSymbol = Math.random() < 0.3 ? '7️⃣' : '💎';
+        } else {
+            // Regular win symbols
+            const winPool = ['🍒', '🍋', '🍇', '🔔', '⭐'];
+            winSymbol = winPool[Math.floor(Math.random() * winPool.length)];
+        }
+        
+        finalSymbols = [winSymbol, winSymbol, winSymbol];
+    } else {
+        // 90% chance - LOSS (random non-matching)
+        finalSymbols = generateLosingCombo();
+    }
     
     // Spin animation
     const reels = ['reel1', 'reel2', 'reel3'];
-    reels.forEach(id => {
+    const intervals = [];
+    
+    reels.forEach((id, idx) => {
         const reel = document.getElementById(id);
-        reel.classList.remove('win');
         reel.classList.add('spinning');
         
-        // Rapid symbol change animation
+        // Rapid symbol change
         const interval = setInterval(() => {
             reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-        }, 100);
-        reel.dataset.interval = interval;
+        }, 80);
+        intervals.push(interval);
     });
     
-    // ✅ 40% WIN / 60% LOSS Logic
-    setTimeout(() => stopReel(0), 1000);
-    setTimeout(() => stopReel(1), 1500);
-    setTimeout(() => stopReel(2), 2000);
-    setTimeout(() => checkWin(), 2500);
+    // Stop reels one by one
+    setTimeout(() => stopReel(0, intervals[0], finalSymbols[0]), 1000);
+    setTimeout(() => stopReel(1, intervals[1], finalSymbols[1]), 1500);
+    setTimeout(() => stopReel(2, intervals[2], finalSymbols[2]), 2000);
+    setTimeout(() => checkResult(finalSymbols), 2300);
 }
 
-let finalSymbols = ['', '', ''];
+function generateLosingCombo() {
+    // Ensure NOT all three same
+    const s1 = symbols[Math.floor(Math.random() * symbols.length)];
+    let s2, s3;
+    
+    do {
+        s2 = symbols[Math.floor(Math.random() * symbols.length)];
+    } while (s2 === s1 && Math.random() < 0.7); // Sometimes 2 can match
+    
+    do {
+        s3 = symbols[Math.floor(Math.random() * symbols.length)];
+    } while (s3 === s1 && s3 === s2); // Never all 3 same
+    
+    return [s1, s2, s3];
+}
 
-function stopReel(index) {
+function stopReel(index, interval, finalSymbol) {
+    clearInterval(interval);
     const reel = document.getElementById(`reel${index + 1}`);
-    clearInterval(reel.dataset.interval);
     reel.classList.remove('spinning');
+    reel.textContent = finalSymbol;
     
-    // Determine final symbol based on win logic
-    if (index === 0) {
-        // 40% chance to win (all match)
-        const willWin = Math.random() < 0.40;
-        if (willWin) {
-            // Pick random winning symbol
-            finalSymbols[0] = symbols[Math.floor(Math.random() * symbols.length)];
-            finalSymbols[1] = finalSymbols[0];
-            finalSymbols[2] = finalSymbols[0];
-        } else {
-            // Random non-matching
-            finalSymbols[0] = symbols[Math.floor(Math.random() * symbols.length)];
-            do {
-                finalSymbols[1] = symbols[Math.floor(Math.random() * symbols.length)];
-            } while (finalSymbols[1] === finalSymbols[0]);
-            do {
-                finalSymbols[2] = symbols[Math.floor(Math.random() * symbols.length)];
-            } while (finalSymbols[2] === finalSymbols[0] || finalSymbols[2] === finalSymbols[1]);
-        }
-    }
-    
-    reel.textContent = finalSymbols[index];
+    // Sound effect for each stop
+    playStopSound();
 }
 
-async function checkWin() {
+async function checkResult(finalSymbols) {
     isSpinning = false;
     document.getElementById('spinBtn').disabled = false;
     
     const [s1, s2, s3] = finalSymbols;
+    const resultMsg = document.getElementById('resultMsg');
     
     if (s1 === s2 && s2 === s3) {
-        // WIN!
+        // 🎉 WIN!
+        totalWins++;
+        document.getElementById('totalWins').textContent = totalWins;
+        
         const multiplier = payouts[s1] || 2;
         const winAmount = currentBet * multiplier;
         
@@ -389,24 +492,43 @@ async function checkWin() {
         syncBalance();
         
         document.getElementById('lastWin').textContent = winAmount;
-        document.getElementById('resultMsg').textContent = `🎉 JACKPOT! Won ₹${winAmount}`;
-        document.getElementById('resultMsg').classList.add('win');
+        
+        // Special jackpot effect
+        if (s1 === '7️⃣') {
+            resultMsg.textContent = `💎 MEGA JACKPOT! ₹${winAmount} 💎`;
+            resultMsg.className = 'result-msg jackpot';
+            createBigCoinRain();
+            playJackpotSound();
+        } else if (s1 === '💎') {
+            resultMsg.textContent = `💎 DIAMOND WIN! ₹${winAmount}`;
+            resultMsg.className = 'result-msg jackpot';
+            createCoinRain();
+            playJackpotSound();
+        } else {
+            resultMsg.textContent = `🎉 WIN! ₹${winAmount} (${multiplier}x)`;
+            resultMsg.className = 'result-msg win';
+            createCoinRain();
+            playWinSound();
+        }
         
         // Highlight winning reels
         ['reel1', 'reel2', 'reel3'].forEach(id => {
             document.getElementById(id).classList.add('win');
         });
         
-        // Coin rain effect
-        createCoinRain();
-        
-        // Sound effect
-        playWinSound();
     } else {
-        // LOSS
+        // ❌ LOSS
         document.getElementById('lastWin').textContent = '0';
-        document.getElementById('resultMsg').textContent = '❌ Try again!';
-        document.getElementById('resultMsg').classList.remove('win');
+        
+        const messages = [
+            '❌ Try again!',
+            '😢 So close!',
+            '🎰 Better luck next spin!',
+            '💸 Try again!',
+            '🎲 Not this time!'
+        ];
+        resultMsg.textContent = messages[Math.floor(Math.random() * messages.length)];
+        resultMsg.className = 'result-msg';
         playLoseSound();
     }
 }
@@ -423,6 +545,22 @@ function createCoinRain() {
             document.body.appendChild(coin);
             setTimeout(() => coin.remove(), 3000);
         }, i * 100);
+    }
+}
+
+function createBigCoinRain() {
+    for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+            const coin = document.createElement('div');
+            coin.className = 'coin-rain';
+            coin.textContent = ['💰', '🪙', '💎', '🏆', '⭐'][Math.floor(Math.random() * 5)];
+            coin.style.left = Math.random() * 100 + '%';
+            coin.style.top = '-30px';
+            coin.style.fontSize = (Math.random() * 1.5 + 1.5) + 'rem';
+            coin.style.animationDuration = (Math.random() * 1 + 1.5) + 's';
+            document.body.appendChild(coin);
+            setTimeout(() => coin.remove(), 3000);
+        }, i * 50);
     }
 }
 
@@ -443,11 +581,28 @@ function playBeep(freq, duration, type = 'sine') {
     } catch(e) {}
 }
 
+function playStopSound() {
+    playBeep(400, 0.05, 'square');
+}
+
 function playWinSound() {
     playBeep(500, 0.1);
     setTimeout(() => playBeep(700, 0.1), 100);
     setTimeout(() => playBeep(900, 0.1), 200);
     setTimeout(() => playBeep(1200, 0.2), 300);
+}
+
+function playJackpotSound() {
+    // Longer, more exciting jackpot sound
+    const notes = [523, 659, 784, 1047, 1319, 1568];
+    notes.forEach((freq, i) => {
+        setTimeout(() => playBeep(freq, 0.15), i * 100);
+    });
+    setTimeout(() => {
+        for (let i = 0; i < 5; i++) {
+            setTimeout(() => playBeep(1500 + i * 200, 0.1), i * 80);
+        }
+    }, 600);
 }
 
 function playLoseSound() {
