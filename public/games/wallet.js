@@ -1,148 +1,102 @@
-// 🎰 Diamond 11 - Casino Wallet Helper
+// 🎰 Diamond 11 - UNIVERSAL Wallet Helper
+// Ye purane games ke API calls ko bhi intercept karta hai
 // Path: frontend/public/games/wallet.js
 
 (function () {
     const API = 'https://diamond11-backend.onrender.com/api';
 
-    // ✅ Token multiple jagah se dhundo
+    // ✅ Get token
     function getToken() {
-        // 1. URL se
         const params = new URLSearchParams(window.location.search);
         let token = params.get('token');
         if (token) {
             localStorage.setItem('token', token);
             return token;
         }
-        // 2. localStorage se
-        token = localStorage.getItem('token') || 
-                localStorage.getItem('userToken') || 
-                localStorage.getItem('authToken');
-        if (token) return token;
-        
-        // 3. Parent window se (agar iframe me hai)
-        try {
-            token = window.parent.localStorage.getItem('token');
-            if (token) return token;
-        } catch(e) {}
-        
-        return null;
+        return localStorage.getItem('token') || 
+               localStorage.getItem('userToken') || 
+               localStorage.getItem('authToken');
     }
 
     const token = getToken();
     console.log('🎰 Wallet.js loaded | Token:', token ? '✅ Found' : '❌ Missing');
 
+    // ✅ MAIN CasinoGame Object
     window.CasinoGame = {
         balance: 0,
+        _initialized: false,
 
-        // ✅ Fetch balance from server
         async fetchBalance() {
-            if (!token) {
-                console.warn('⚠️ No token - cannot fetch balance');
-                return 0;
-            }
+            if (!token) return 0;
             try {
                 const res = await fetch(`${API}/wallet/balance`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
+                if (!res.ok) return this.balance;
                 const data = await res.json();
                 if (data.success) {
-                    this.balance = data.data?.balance ?? data.balance ?? 0;
+                    this.balance = Number(data.data?.balance ?? data.balance ?? 0);
+                    this._initialized = true;
                     this.updateUI();
-                    console.log('💰 Balance loaded:', this.balance);
                     return this.balance;
                 }
             } catch (e) {
-                console.error('❌ Wallet fetch error:', e);
+                console.error('Balance fetch error:', e);
             }
             return this.balance;
         },
 
-        // ✅ Place Bet
         async placeBet(amount) {
-            if (!token) {
-                alert('Login required! Please login first.');
-                return false;
-            }
-            if (amount <= 0) return false;
-            if (amount > this.balance) {
-                console.warn('❌ Insufficient balance');
-                return false;
-            }
+            amount = Number(amount);
+            if (!token || amount <= 0 || isNaN(amount)) return false;
+            if (!this._initialized) await this.fetchBalance();
+            if (amount > this.balance) return false;
 
-            try {
-                const res = await fetch(`${API}/game/place-bet`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        gameCode: 'casino',
-                        betAmount: amount
-                    })
-                });
-                const data = await res.json();
+            // Local deduction (instant UI)
+            this.balance -= amount;
+            this.updateUI();
 
-                if (data.success) {
-                    this.balance = data.newBalance ?? (this.balance - amount);
-                    this.updateUI();
-                    console.log(`✅ Bet: ₹${amount} | Balance: ₹${this.balance}`);
-                    return true;
-                }
-                console.warn('❌ Bet failed:', data.message);
-                return false;
-            } catch (e) {
-                console.error('❌ PlaceBet error:', e);
-                // Fallback: local deduction if server fails
-                this.balance -= amount;
-                this.updateUI();
-                return true;
-            }
+            // Background sync
+            this._syncBalance('deduct', amount);
+            console.log(`✅ Bet: ₹${amount} | Balance: ₹${this.balance}`);
+            return true;
         },
 
-        // ✅ Report Win
         async reportWin(amount) {
-            if (!token) return false;
-            if (amount <= 0) return false;
+            amount = Number(amount);
+            if (!token || amount <= 0 || isNaN(amount)) return false;
 
-            try {
-                const res = await fetch(`${API}/game/cashout`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        gameCode: 'casino',
-                        betAmount: 0,
-                        winAmount: amount,
-                        multiplier: 1
-                    })
-                });
-                const data = await res.json();
+            this.balance += amount;
+            this.updateUI();
 
-                if (data.success) {
-                    this.balance = data.newBalance ?? (this.balance + amount);
-                    this.updateUI();
-                    console.log(`🎉 Win: ₹${amount} | Balance: ₹${this.balance}`);
-                    return true;
-                }
-                return false;
-            } catch (e) {
-                console.error('❌ ReportWin error:', e);
-                // Fallback: local add if server fails
-                this.balance += amount;
-                this.updateUI();
-                return true;
-            }
+            this._syncBalance('credit', amount);
+            console.log(`🎉 Win: ₹${amount} | Balance: ₹${this.balance}`);
+            return true;
         },
 
-        // ✅ Update all balance displays
+        // Background server sync (silent)
+        _syncBalance(type, amount) {
+            const endpoint = type === 'deduct' ? 'deduct' : 'credit';
+            fetch(`${API}/wallet/${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ amount, type, gameCode: 'casino' })
+            }).then(r => r.json()).then(data => {
+                if (data.success && data.newBalance !== undefined) {
+                    this.balance = Number(data.newBalance);
+                    this.updateUI();
+                }
+            }).catch(() => {});
+        },
+
         updateUI() {
-            const selectors = [
-                '#balance', '#topBal', '#topBalance',
-                '#walletBalance', '#balanceDisplay', '#bal'
-            ];
+            const selectors = ['#balance', '#topBal', '#topBalance', '#walletBalance', '#balanceDisplay', '#bal', '.balance', '.wallet-balance'];
             selectors.forEach(sel => {
                 document.querySelectorAll(sel).forEach(el => {
                     el.textContent = this.balance.toFixed(2);
@@ -151,9 +105,84 @@
         }
     };
 
-    // ✅ Initial load
+    // ================================================
+    // 🔥 FETCH INTERCEPTOR - Purane games ke API calls fix karta hai
+    // ================================================
+    const originalFetch = window.fetch;
+    
+    window.fetch = async function(url, options = {}) {
+        const urlStr = typeof url === 'string' ? url : url.url || '';
+        
+        // ✅ Intercept /game/place-bet calls
+        if (urlStr.includes('/game/place-bet') || urlStr.includes('/api/game/place-bet')) {
+            console.log('🎯 Intercepted place-bet call');
+            try {
+                const body = JSON.parse(options.body || '{}');
+                const amount = Number(body.betAmount || body.amount || 0);
+                
+                const success = await window.CasinoGame.placeBet(amount);
+                
+                return new Response(JSON.stringify({
+                    success: success,
+                    newBalance: window.CasinoGame.balance,
+                    message: success ? 'Bet placed' : 'Insufficient balance'
+                }), {
+                    status: success ? 200 : 400,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } catch (e) {
+                return new Response(JSON.stringify({ success: false, message: 'Error' }), { status: 400 });
+            }
+        }
+
+        // ✅ Intercept /game/cashout calls
+        if (urlStr.includes('/game/cashout') || urlStr.includes('/api/game/cashout')) {
+            console.log('🎯 Intercepted cashout call');
+            try {
+                const body = JSON.parse(options.body || '{}');
+                const winAmount = Number(body.winAmount || body.amount || 0);
+                
+                if (winAmount > 0) {
+                    await window.CasinoGame.reportWin(winAmount);
+                }
+                
+                return new Response(JSON.stringify({
+                    success: true,
+                    newBalance: window.CasinoGame.balance
+                }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } catch (e) {
+                return new Response(JSON.stringify({ success: false }), { status: 400 });
+            }
+        }
+
+        // ✅ Intercept /wallet/balance for consistency
+        if (urlStr.includes('/wallet/balance') && !urlStr.includes(API)) {
+            console.log('🎯 Intercepted balance call');
+            return new Response(JSON.stringify({
+                success: true,
+                data: { balance: window.CasinoGame.balance },
+                balance: window.CasinoGame.balance
+            }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // ✅ Other requests pass through
+        return originalFetch.apply(this, arguments);
+    };
+
+    console.log('🛡️ Fetch interceptor installed');
+
+    // ✅ Auto-load balance
     if (token) {
         window.CasinoGame.fetchBalance();
+        document.addEventListener('DOMContentLoaded', () => {
+            window.CasinoGame.updateUI();
+        });
     }
 
 })();
