@@ -3,35 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Police Car Parking Bet - Diamond 11</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <title>Police Car Parking - Diamond 11</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
     
     <script src="../wallet.js"></script>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
+        /* ✅ DIAMOND 11 PROJECT COLORS */
         body { 
-            background: #0a0a15; 
+            background: #4A0E8F; 
             color: white; 
-            font-family: 'Arial', sans-serif;
+            font-family: 'Poppins', sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
         }
         
-        /* Top Bar */
+        /* Top Bar - Diamond 11 Style */
         #topBar {
             position: fixed;
             top: 0; left: 0; right: 0;
             height: 55px;
-            background: linear-gradient(180deg, #001f3f, #000a1f);
+            background: #3b0b72;
             border-bottom: 2px solid #ffd700;
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 18px;
             z-index: 999;
-            font-family: 'Orbitron', sans-serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .title { 
@@ -39,6 +54,8 @@
             font-weight: 900; 
             font-size: 1rem;
             letter-spacing: 1px;
+            flex: 1;
+            text-align: center;
         }
         
         .balance-box {
@@ -51,6 +68,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            font-size: 0.9rem;
         }
         
         /* ============================================ */
@@ -67,13 +85,13 @@
         
         /* Game Info Card */
         .game-info-card {
-            background: linear-gradient(135deg, #001f3f, #003366);
-            border-radius: 16px;
+            background: linear-gradient(135deg, #5B21B6, #4A0E8F);
+            border-radius: 20px;
             padding: 25px 20px;
             margin-bottom: 20px;
             text-align: center;
-            border: 2px solid rgba(255,215,0,0.3);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 2px solid #ffd700;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
             position: relative;
             overflow: hidden;
         }
@@ -104,23 +122,23 @@
         }
         
         .game-info-card h2 {
-            font-family: 'Orbitron', sans-serif;
             color: #ffd700;
             margin-bottom: 10px;
             letter-spacing: 2px;
             font-size: 1.3rem;
+            font-weight: 900;
         }
         
         .game-info-card p {
-            color: #ccc;
+            color: rgba(255,255,255,0.9);
             font-size: 0.85rem;
             line-height: 1.5;
         }
         
-        /* Difficulty Section */
+        /* Section Card */
         .section {
-            background: rgba(0,0,0,0.4);
-            border-radius: 12px;
+            background: #5B21B6;
+            border-radius: 15px;
             padding: 15px;
             margin-bottom: 15px;
             border: 1px solid rgba(255,255,255,0.1);
@@ -133,11 +151,9 @@
             text-transform: uppercase;
             letter-spacing: 1.5px;
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
         
+        /* Difficulty */
         .diff-options {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -152,7 +168,6 @@
             color: white;
             cursor: pointer;
             transition: 0.3s;
-            font-family: 'Orbitron', sans-serif;
             text-align: center;
         }
         
@@ -169,10 +184,11 @@
         
         .diff-btn .level {
             font-size: 0.7rem;
-            color: #888;
+            color: rgba(255,255,255,0.6);
             display: block;
             margin-bottom: 5px;
             letter-spacing: 1px;
+            font-weight: 700;
         }
         
         .diff-btn .mult {
@@ -182,9 +198,9 @@
             text-shadow: 0 0 10px rgba(255,215,0,0.5);
         }
         
-        .diff-btn .target {
+        .diff-btn .info {
             font-size: 0.65rem;
-            color: #aaa;
+            color: rgba(255,255,255,0.7);
             display: block;
             margin-top: 3px;
         }
@@ -200,15 +216,15 @@
         .bet-input {
             flex: 1;
             padding: 15px;
-            background: #1a1a2e;
+            background: rgba(0,0,0,0.3);
             border: 2px solid #ffd700;
             border-radius: 10px;
             color: white;
-            font-family: 'Orbitron', sans-serif;
             font-weight: 900;
             font-size: 1.5rem;
             text-align: center;
             outline: none;
+            font-family: 'Poppins', sans-serif;
         }
         
         .quick-bets {
@@ -236,65 +252,28 @@
         
         /* Potential Win */
         .potential-win {
-            background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,255,136,0.05));
-            border: 2px solid rgba(0,255,136,0.3);
-            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,255,136,0.05));
+            border: 2px solid rgba(0,255,136,0.5);
+            border-radius: 15px;
             padding: 15px;
             margin-bottom: 15px;
             text-align: center;
         }
         
         .potential-win .label {
-            color: #888;
+            color: rgba(255,255,255,0.7);
             font-size: 0.8rem;
             text-transform: uppercase;
             margin-bottom: 5px;
             letter-spacing: 1px;
+            font-weight: 700;
         }
         
         .potential-win .amount {
             color: #00ff88;
-            font-family: 'Orbitron', sans-serif;
             font-size: 2rem;
             font-weight: 900;
             text-shadow: 0 0 15px rgba(0,255,136,0.5);
-        }
-        
-        /* Rules Card */
-        .rules-card {
-            background: rgba(255,215,0,0.05);
-            border: 1px solid rgba(255,215,0,0.2);
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 15px;
-        }
-        
-        .rules-card h4 {
-            color: #ffd700;
-            font-size: 0.8rem;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-        
-        .rules-card ul {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .rules-card li {
-            color: #ccc;
-            font-size: 0.8rem;
-            padding: 3px 0;
-            padding-left: 20px;
-            position: relative;
-        }
-        
-        .rules-card li::before {
-            content: '✓';
-            position: absolute;
-            left: 0;
-            color: #00ff88;
-            font-weight: 900;
         }
         
         /* Start Button */
@@ -302,16 +281,16 @@
             width: 100%;
             padding: 20px;
             background: linear-gradient(135deg, #ffd700, #ff9500);
-            color: #000;
+            color: #4A0E8F;
             border: none;
-            border-radius: 14px;
-            font-family: 'Orbitron', sans-serif;
+            border-radius: 15px;
             font-weight: 900;
             font-size: 1.2rem;
             cursor: pointer;
             letter-spacing: 3px;
             box-shadow: 0 8px 25px rgba(255,215,0,0.5);
             transition: 0.3s;
+            font-family: 'Poppins', sans-serif;
         }
         
         .start-btn:hover:not(:disabled) {
@@ -340,65 +319,153 @@
             display: flex;
         }
         
-        /* Game HUD */
+        /* Game HUD - Simplified (No Timer!) */
         .game-hud {
-            background: linear-gradient(180deg, rgba(0,0,0,0.95), rgba(0,0,0,0.7));
-            padding: 12px 15px;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
+            background: #3b0b72;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             border-bottom: 2px solid #ffd700;
             box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            gap: 10px;
         }
         
         .hud-item {
-            text-align: center;
-            background: rgba(255,215,0,0.05);
-            padding: 8px;
+            background: rgba(255,215,0,0.1);
+            padding: 8px 15px;
             border-radius: 8px;
-            border: 1px solid rgba(255,215,0,0.2);
+            border: 1px solid rgba(255,215,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
         }
         
         .hud-item .hud-label {
-            font-size: 0.65rem;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.75rem;
         }
         
         .hud-item .hud-value {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.2rem;
-            font-weight: 900;
             color: #ffd700;
-            margin-top: 3px;
+            font-weight: 900;
+            font-size: 1rem;
         }
         
-        .hud-item .hud-value.score { color: #00ff88; }
-        .hud-item .hud-value.timer { color: #ff6b00; }
-        
-        /* Game iframe */
-        .game-iframe {
+        /* Iframe Container - HIDES ADS/EXTRAS */
+        .iframe-wrapper {
             flex: 1;
-            width: 100%;
-            border: none;
+            position: relative;
+            overflow: hidden;
             background: #000;
         }
         
-        /* Quit Button */
-        .quit-btn {
+        /* ✅ IFRAME - Hide top ads by pushing up */
+        .game-iframe {
+            width: 100%;
+            height: calc(100% + 80px); /* Extra height to hide bottom ads */
+            border: none;
+            background: #000;
             position: absolute;
-            top: 65px;
-            right: 10px;
-            background: rgba(255,0,0,0.8);
+            top: -40px; /* Push up to hide top branding */
+            left: 0;
+        }
+        
+        /* ✅ TOP OVERLAY - Hides "AD" branding */
+        .top-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: #000;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffd700;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+        }
+        
+        /* ✅ BOTTOM OVERLAY - Hides ads */
+        .bottom-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(180deg, transparent, #000);
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        /* Cash Out Button - Diamond 11 Style */
+        .cashout-panel {
+            background: #3b0b72;
+            padding: 12px 15px;
+            display: flex;
+            gap: 10px;
+            border-top: 2px solid #ffd700;
+        }
+        
+        .cashout-btn {
+            flex: 1;
+            padding: 15px;
+            background: linear-gradient(135deg, #00ff88, #00aa55);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 1rem;
+            cursor: pointer;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 20px rgba(0,255,136,0.4);
+            font-family: 'Poppins', sans-serif;
+            animation: cashPulse 1.5s infinite;
+        }
+        
+        @keyframes cashPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 5px 20px rgba(0,255,136,0.4); }
+            50% { transform: scale(1.02); box-shadow: 0 8px 30px rgba(0,255,136,0.7); }
+        }
+        
+        .quit-btn {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #ff4444, #cc0000);
             color: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 1rem;
             cursor: pointer;
-            z-index: 1000;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 20px rgba(255,68,68,0.4);
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        /* Multiplier Display in Game */
+        .live-multiplier {
+            position: absolute;
+            top: 45px;
+            right: 15px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #ffd700;
+            padding: 8px 15px;
+            border-radius: 25px;
+            font-weight: 900;
+            color: #ffd700;
+            z-index: 20;
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+            animation: multPulse 1s infinite;
+        }
+        
+        @keyframes multPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
         
         /* ============================================ */
@@ -419,7 +486,7 @@
         .result-screen.show { display: flex; }
         
         .result-box {
-            background: linear-gradient(135deg, #001f3f, #000a1f);
+            background: linear-gradient(135deg, #5B21B6, #4A0E8F);
             border-radius: 24px;
             padding: 40px 30px;
             max-width: 350px;
@@ -464,7 +531,6 @@
         }
         
         .result-title {
-            font-family: 'Orbitron', sans-serif;
             font-size: 2rem;
             font-weight: 900;
             margin-bottom: 15px;
@@ -475,11 +541,10 @@
         .result-title.lose { color: #ff2a2a; text-shadow: 0 0 30px rgba(255,42,42,0.7); }
         
         .result-details {
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.4);
             border-radius: 12px;
             padding: 15px;
             margin: 20px 0;
-            border: 1px solid rgba(255,255,255,0.1);
         }
         
         .detail-row {
@@ -492,44 +557,30 @@
         
         .detail-row:last-child { border: none; }
         
-        .detail-row .lbl { color: #888; }
+        .detail-row .lbl { color: rgba(255,255,255,0.7); }
         .detail-row .val { color: white; font-weight: 700; }
         
         .result-amount {
-            font-family: 'Orbitron', sans-serif;
             font-size: 3rem;
             font-weight: 900;
             color: #ffd700;
             margin: 20px 0;
             text-shadow: 0 0 30px rgba(255,215,0,0.6);
-            animation: amountPop 0.8s ease-out;
-        }
-        
-        @keyframes amountPop {
-            0% { transform: scale(0); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
         }
         
         .result-btn {
             padding: 15px 40px;
             background: linear-gradient(135deg, #ffd700, #ff9500);
-            color: #000;
+            color: #4A0E8F;
             border: none;
             border-radius: 12px;
-            font-family: 'Orbitron', sans-serif;
             font-weight: 900;
             cursor: pointer;
             font-size: 1rem;
             letter-spacing: 2px;
             box-shadow: 0 5px 20px rgba(255,215,0,0.5);
             margin-top: 10px;
-            transition: 0.3s;
-        }
-        
-        .result-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(255,215,0,0.8);
+            font-family: 'Poppins', sans-serif;
         }
         
         /* Coin rain */
@@ -545,78 +596,18 @@
             0% { transform: translateY(-30px) rotate(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
         }
-        
-        /* Siren lights animation */
-        .siren-lights {
-            position: fixed;
-            top: 55px;
-            left: 0; right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, #ff0000, #0000ff, #ff0000, #0000ff);
-            background-size: 200% 100%;
-            animation: sirenSlide 1s linear infinite;
-            z-index: 998;
-        }
-        
-        @keyframes sirenSlide {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 200% 0%; }
-        }
-        
-        /* Loading */
-        .loading-screen {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .loading-screen.show { display: flex; }
-        
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 5px solid rgba(255,215,0,0.2);
-            border-top: 5px solid #ffd700;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .loading-text {
-            color: #ffd700;
-            font-family: 'Orbitron', sans-serif;
-            letter-spacing: 2px;
-        }
     </style>
 </head>
 <body>
 
-<!-- Siren Lights -->
-<div class="siren-lights"></div>
-
-<!-- Top Bar -->
+<!-- Top Bar - Diamond 11 Style -->
 <div id="topBar">
-    <div class="title">🚔 POLICE CAR PARKING</div>
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div class="title">🚔 POLICE PARKING</div>
     <div class="balance-box">
         <span>💰</span>
         <span>₹<span id="topBal">0.00</span></span>
     </div>
-</div>
-
-<!-- Loading Screen -->
-<div class="loading-screen" id="loadingScreen">
-    <div class="spinner"></div>
-    <div class="loading-text">Loading Game...</div>
 </div>
 
 <!-- ============================================ -->
@@ -627,28 +618,28 @@
     <!-- Game Info -->
     <div class="game-info-card">
         <div class="icon">🚔</div>
-        <h2>POLICE PARKING BET</h2>
-        <p>Park the police car successfully to WIN! Complete parking levels within time to multiply your bet.</p>
+        <h2>POLICE PARKING</h2>
+        <p>Park the police car & cash out anytime! Multiplier increases as you play. Cash out before you crash!</p>
     </div>
     
     <!-- Difficulty -->
     <div class="section">
-        <div class="section-title">🎯 Choose Difficulty Level</div>
+        <div class="section-title">🎯 Choose Difficulty</div>
         <div class="diff-options">
             <div class="diff-btn active" data-diff="easy" onclick="setDifficulty('easy')">
                 <span class="level">EASY</span>
                 <span class="mult">2x</span>
-                <span class="target">Park 1 car</span>
+                <span class="info">Low Risk</span>
             </div>
             <div class="diff-btn" data-diff="medium" onclick="setDifficulty('medium')">
                 <span class="level">MEDIUM</span>
                 <span class="mult">5x</span>
-                <span class="target">Park 2 cars</span>
+                <span class="info">Med Risk</span>
             </div>
             <div class="diff-btn" data-diff="hard" onclick="setDifficulty('hard')">
                 <span class="level">HARD</span>
                 <span class="mult">15x</span>
-                <span class="target">Park 3 cars</span>
+                <span class="info">High Risk</span>
             </div>
         </div>
     </div>
@@ -669,26 +660,15 @@
         </div>
     </div>
     
-    <!-- Potential Win -->
+    <!-- Potential Max Win -->
     <div class="potential-win">
-        <div class="label">Potential Win</div>
+        <div class="label">💎 Max Potential Win</div>
         <div class="amount">₹<span id="potentialWin">20</span></div>
-    </div>
-    
-    <!-- Rules -->
-    <div class="rules-card">
-        <h4>📋 Game Rules</h4>
-        <ul>
-            <li>Park the police car in marked spot</li>
-            <li>Complete required parks in 60 seconds</li>
-            <li>Don't crash or time out</li>
-            <li>Higher difficulty = higher reward</li>
-        </ul>
     </div>
     
     <!-- Start Button -->
     <button class="start-btn" onclick="startGame()">
-        🚨 START MISSION
+        🚨 START GAME
     </button>
 </div>
 
@@ -696,31 +676,51 @@
 <!-- SCREEN 2: GAME SCREEN -->
 <!-- ============================================ -->
 <div class="game-screen" id="gameScreen">
+    
+    <!-- Game HUD -->
     <div class="game-hud">
         <div class="hud-item">
-            <div class="hud-label">Time Left</div>
-            <div class="hud-value timer">⏱️ <span id="timer">60</span>s</div>
+            <span class="hud-label">Bet:</span>
+            <span class="hud-value">₹<span id="hudBet">0</span></span>
         </div>
         <div class="hud-item">
-            <div class="hud-label">Parked</div>
-            <div class="hud-value score">🚗 <span id="score">0</span></div>
-        </div>
-        <div class="hud-item">
-            <div class="hud-label">Target</div>
-            <div class="hud-value">🎯 <span id="target">1</span></div>
+            <span class="hud-label">Win:</span>
+            <span class="hud-value">₹<span id="hudWin">0</span></span>
         </div>
     </div>
     
-    <button class="quit-btn" onclick="quitGame()">✕ QUIT</button>
+    <!-- Iframe with Overlays -->
+    <div class="iframe-wrapper">
+        <!-- ✅ TOP OVERLAY - Hides game branding -->
+        <div class="top-overlay">🎮 GAME IN PROGRESS</div>
+        
+        <!-- ✅ LIVE MULTIPLIER -->
+        <div class="live-multiplier">
+            🔥 <span id="liveMult">1.00</span>x
+        </div>
+        
+        <!-- ✅ GAME IFRAME -->
+        <iframe 
+            class="game-iframe"
+            id="gameFrame"
+            src=""
+            allowfullscreen
+            allow="autoplay; fullscreen; gamepad">
+        </iframe>
+        
+        <!-- ✅ BOTTOM OVERLAY - Hides ads -->
+        <div class="bottom-overlay"></div>
+    </div>
     
-    <!-- ✅ POLICE CAR PARKING IFRAME -->
-    <iframe 
-        class="game-iframe"
-        id="gameFrame"
-        src=""
-        allowfullscreen
-        allow="autoplay; fullscreen; gamepad">
-    </iframe>
+    <!-- Cash Out & Quit Buttons -->
+    <div class="cashout-panel">
+        <button class="cashout-btn" onclick="cashOut()">
+            💰 CASH OUT ₹<span id="cashAmt">0</span>
+        </button>
+        <button class="quit-btn" onclick="quitGame()">
+            ✕
+        </button>
+    </div>
 </div>
 
 <!-- ============================================ -->
@@ -729,7 +729,7 @@
 <div class="result-screen" id="resultScreen">
     <div class="result-box">
         <div class="result-icon" id="resultIcon">🎉</div>
-        <div class="result-title" id="resultTitle">MISSION SUCCESS!</div>
+        <div class="result-title" id="resultTitle">YOU WON!</div>
         
         <div class="result-details">
             <div class="detail-row">
@@ -737,16 +737,12 @@
                 <span class="val">₹<span id="resBet">0</span></span>
             </div>
             <div class="detail-row">
-                <span class="lbl">Cars Parked:</span>
-                <span class="val"><span id="resScore">0</span></span>
-            </div>
-            <div class="detail-row">
-                <span class="lbl">Target:</span>
-                <span class="val"><span id="resTarget">0</span></span>
-            </div>
-            <div class="detail-row">
                 <span class="lbl">Multiplier:</span>
                 <span class="val"><span id="resMult">0</span>x</span>
+            </div>
+            <div class="detail-row">
+                <span class="lbl">Status:</span>
+                <span class="val" id="resStatus">Cashed Out</span>
             </div>
         </div>
         
@@ -763,13 +759,12 @@
 // ✅ GAME CONFIGURATION
 // ============================================
 const GAME_URL = "https://html5.gamemonetize.co/zo8ocq9uu0gjavl3iazgiessapj6ov6n/";
-const GAME_TIME = 60; // 60 seconds
 
-// Difficulty settings with WIN RATE control
+// Difficulty settings
 const DIFFICULTIES = {
-    easy:   { target: 1, mult: 2,  winChance: 0.40 },  // 40% chance to win
-    medium: { target: 2, mult: 5,  winChance: 0.25 },  // 25% chance
-    hard:   { target: 3, mult: 15, winChance: 0.10 }   // 10% chance
+    easy:   { maxMult: 2,   crashChance: 0.02, speed: 30 },   // Slow, low risk
+    medium: { maxMult: 5,   crashChance: 0.04, speed: 20 },   // Medium
+    hard:   { maxMult: 15,  crashChance: 0.06, speed: 15 }    // Fast, high risk
 };
 
 // ============================================
@@ -778,12 +773,10 @@ const DIFFICULTIES = {
 let balance = 0;
 let currentBet = 10;
 let selectedDifficulty = 'easy';
-let currentScore = 0;
-let gameTimer = GAME_TIME;
-let gameInterval;
-let scoreInterval;
+let currentMultiplier = 1;
 let gameActive = false;
-let finalScoreTarget = 0;
+let multiplierInterval;
+let hasCashedOut = false;
 
 function syncBalance() {
     balance = window.CasinoGame ? window.CasinoGame.balance : 0;
@@ -798,6 +791,14 @@ function waitForWallet() {
     }
 }
 waitForWallet();
+
+// Back button
+function goBack() {
+    if (gameActive) {
+        if (!confirm('Quit game? You will lose your bet!')) return;
+    }
+    window.history.back();
+}
 
 // Set difficulty
 function setDifficulty(diff) {
@@ -820,12 +821,12 @@ function setBet(val) {
 // Update potential win
 function updatePotentialWin() {
     const bet = parseFloat(document.getElementById('betInput').value) || 0;
-    const mult = DIFFICULTIES[selectedDifficulty].mult;
+    const mult = DIFFICULTIES[selectedDifficulty].maxMult;
     document.getElementById('potentialWin').textContent = Math.floor(bet * mult);
 }
 
 // ============================================
-// ✅ START GAME
+// ✅ START GAME - No Timer!
 // ============================================
 async function startGame() {
     const bet = parseFloat(document.getElementById('betInput').value) || 10;
@@ -837,154 +838,141 @@ async function startGame() {
     syncBalance();
     
     currentBet = bet;
-    currentScore = 0;
-    gameTimer = GAME_TIME;
+    currentMultiplier = 1;
     gameActive = true;
+    hasCashedOut = false;
     
-    // Setup
-    const diff = DIFFICULTIES[selectedDifficulty];
-    document.getElementById('target').textContent = diff.target;
-    document.getElementById('score').textContent = '0';
-    document.getElementById('timer').textContent = GAME_TIME;
-    document.getElementById('score').style.color = '#00ff88';
-    document.getElementById('timer').style.color = '#ff6b00';
-    
-    // Show loading
-    document.getElementById('loadingScreen').classList.add('show');
+    // Setup HUD
+    document.getElementById('hudBet').textContent = bet;
+    document.getElementById('hudWin').textContent = bet;
+    document.getElementById('cashAmt').textContent = bet;
+    document.getElementById('liveMult').textContent = '1.00';
     
     // Switch screens
     document.getElementById('betScreen').classList.add('hidden');
     document.getElementById('gameScreen').classList.add('active');
     
     // Load iframe
-    const iframe = document.getElementById('gameFrame');
-    iframe.src = GAME_URL;
+    document.getElementById('gameFrame').src = GAME_URL;
     
-    iframe.onload = () => {
-        setTimeout(() => {
-            document.getElementById('loadingScreen').classList.remove('show');
-            startTimers(diff);
-        }, 1500);
-    };
-    
-    // Fallback if iframe doesn't load
-    setTimeout(() => {
-        document.getElementById('loadingScreen').classList.remove('show');
-        if (gameActive) startTimers(diff);
-    }, 5000);
-}
-
-function startTimers(diff) {
-    // Timer countdown
-    gameInterval = setInterval(() => {
-        gameTimer--;
-        document.getElementById('timer').textContent = gameTimer;
-        
-        if (gameTimer <= 10) {
-            document.getElementById('timer').style.color = '#ff2a2a';
-        }
-        
-        if (gameTimer <= 0) {
-            endGame();
-        }
-    }, 1000);
-    
-    // Score simulator
-    simulateScore(diff);
-}
-
-// ============================================
-// ✅ SCORE SIMULATOR - 25% Win Logic
-// ============================================
-function simulateScore(diff) {
-    // Decide winner or loser
-    const willWin = Math.random() < diff.winChance;
-    
-    if (willWin) {
-        // Winner: score >= target
-        finalScoreTarget = diff.target + Math.floor(Math.random() * 2);
-    } else {
-        // Loser: score < target
-        finalScoreTarget = Math.max(0, diff.target - 1 - Math.floor(Math.random() * diff.target));
-    }
-    
-    // Increment score gradually
-    const totalTicks = GAME_TIME;
-    const scorePerTick = finalScoreTarget / totalTicks;
-    let displayScore = 0;
-    
-    scoreInterval = setInterval(() => {
-        if (!gameActive) return;
-        
-        displayScore += scorePerTick;
-        currentScore = Math.floor(displayScore);
-        document.getElementById('score').textContent = currentScore;
-        
-        // Highlight when target reached
-        if (currentScore >= diff.target) {
-            document.getElementById('score').style.color = '#00ff88';
-            document.getElementById('score').style.textShadow = '0 0 15px rgba(0,255,136,0.7)';
-        }
-    }, 1000);
-    
-    // Set final score just before end
-    setTimeout(() => {
-        currentScore = finalScoreTarget;
-        document.getElementById('score').textContent = finalScoreTarget;
-    }, (GAME_TIME - 1) * 1000);
-}
-
-// ============================================
-// ✅ END GAME
-// ============================================
-async function endGame() {
-    gameActive = false;
-    clearInterval(gameInterval);
-    clearInterval(scoreInterval);
-    
+    // ============================================
+    // ✅ MULTIPLIER LOGIC - Increases over time
+    // Random crash based on difficulty
+    // ============================================
     const diff = DIFFICULTIES[selectedDifficulty];
-    const isWin = currentScore >= diff.target;
     
-    // Set result details
-    document.getElementById('resBet').textContent = currentBet;
-    document.getElementById('resScore').textContent = currentScore;
-    document.getElementById('resTarget').textContent = diff.target;
-    document.getElementById('resMult').textContent = diff.mult;
-    
-    if (isWin) {
-        // ✅ WIN
-        const winAmount = Math.floor(currentBet * diff.mult);
-        
-        await window.CasinoGame.reportWin(winAmount);
-        syncBalance();
-        
-        document.getElementById('resultIcon').textContent = '🚔';
-        document.getElementById('resultTitle').textContent = 'MISSION SUCCESS!';
-        document.getElementById('resultTitle').className = 'result-title win';
-        document.getElementById('resSign').textContent = '+';
-        document.getElementById('resAmount').textContent = winAmount;
-        
-        // Effects
-        createCoinRain();
-        playWinSound();
-    } else {
-        // ❌ LOSS
-        document.getElementById('resultIcon').textContent = '🚨';
-        document.getElementById('resultTitle').textContent = 'MISSION FAILED!';
-        document.getElementById('resultTitle').className = 'result-title lose';
-        document.getElementById('resSign').textContent = '-';
-        document.getElementById('resAmount').textContent = currentBet;
-        
-        playLoseSound();
-    }
-    
-    document.getElementById('resultScreen').classList.add('show');
+    setTimeout(() => {
+        startMultiplier(diff);
+    }, 3000); // Wait 3 sec for game to load
 }
 
-// Quit game (loss)
+function startMultiplier(diff) {
+    if (!gameActive) return;
+    
+    multiplierInterval = setInterval(() => {
+        if (!gameActive || hasCashedOut) return;
+        
+        // Increase multiplier
+        currentMultiplier += 0.01 * (diff.speed / 30);
+        
+        // Update displays
+        document.getElementById('liveMult').textContent = currentMultiplier.toFixed(2);
+        const currentWin = Math.floor(currentBet * currentMultiplier);
+        document.getElementById('hudWin').textContent = currentWin;
+        document.getElementById('cashAmt').textContent = currentWin;
+        
+        // Color change based on multiplier
+        const liveMult = document.getElementById('liveMult');
+        if (currentMultiplier >= 10) {
+            liveMult.parentElement.style.borderColor = '#ff00ff';
+            liveMult.parentElement.style.boxShadow = '0 0 30px rgba(255,0,255,0.7)';
+        } else if (currentMultiplier >= 5) {
+            liveMult.parentElement.style.borderColor = '#ff6b00';
+            liveMult.parentElement.style.boxShadow = '0 0 30px rgba(255,107,0,0.7)';
+        } else if (currentMultiplier >= 2) {
+            liveMult.parentElement.style.borderColor = '#00ff88';
+            liveMult.parentElement.style.boxShadow = '0 0 30px rgba(0,255,136,0.7)';
+        }
+        
+        // ✅ CRASH LOGIC - Random crash chance
+        // Higher difficulty = higher crash chance
+        // Higher multiplier = higher crash chance
+        const crashProbability = diff.crashChance * (currentMultiplier / diff.maxMult);
+        
+        if (Math.random() < crashProbability || currentMultiplier >= diff.maxMult) {
+            crashGame();
+        }
+    }, 200);
+}
+
+// ============================================
+// ✅ CASH OUT
+// ============================================
+async function cashOut() {
+    if (!gameActive || hasCashedOut) return;
+    
+    hasCashedOut = true;
+    gameActive = false;
+    clearInterval(multiplierInterval);
+    
+    const winAmount = Math.floor(currentBet * currentMultiplier);
+    
+    // ✅ Add to wallet
+    await window.CasinoGame.reportWin(winAmount);
+    syncBalance();
+    
+    // Show result
+    document.getElementById('resBet').textContent = currentBet;
+    document.getElementById('resMult').textContent = currentMultiplier.toFixed(2);
+    document.getElementById('resStatus').textContent = 'Cashed Out';
+    document.getElementById('resStatus').style.color = '#00ff88';
+    
+    document.getElementById('resultIcon').textContent = '💰';
+    document.getElementById('resultTitle').textContent = 'CASHED OUT!';
+    document.getElementById('resultTitle').className = 'result-title win';
+    document.getElementById('resSign').textContent = '+';
+    document.getElementById('resAmount').textContent = winAmount;
+    
+    createCoinRain();
+    playWinSound();
+    
+    setTimeout(() => {
+        document.getElementById('resultScreen').classList.add('show');
+    }, 500);
+}
+
+// ============================================
+// ✅ CRASH GAME (Lost)
+// ============================================
+function crashGame() {
+    if (!gameActive || hasCashedOut) return;
+    
+    gameActive = false;
+    clearInterval(multiplierInterval);
+    
+    // Show result
+    document.getElementById('resBet').textContent = currentBet;
+    document.getElementById('resMult').textContent = currentMultiplier.toFixed(2);
+    document.getElementById('resStatus').textContent = 'Crashed';
+    document.getElementById('resStatus').style.color = '#ff2a2a';
+    
+    document.getElementById('resultIcon').textContent = '💥';
+    document.getElementById('resultTitle').textContent = 'CRASHED!';
+    document.getElementById('resultTitle').className = 'result-title lose';
+    document.getElementById('resSign').textContent = '-';
+    document.getElementById('resAmount').textContent = currentBet;
+    
+    playLoseSound();
+    
+    setTimeout(() => {
+        document.getElementById('resultScreen').classList.add('show');
+    }, 500);
+}
+
+// Quit game
 function quitGame() {
     if (!confirm('Quit game? You will lose your bet!')) return;
-    endGame();
+    crashGame();
 }
 
 // Play again
@@ -993,23 +981,25 @@ function playAgain() {
     document.getElementById('gameScreen').classList.remove('active');
     document.getElementById('betScreen').classList.remove('hidden');
     document.getElementById('gameFrame').src = '';
-    document.getElementById('score').style.color = '#00ff88';
-    document.getElementById('score').style.textShadow = '';
-    document.getElementById('timer').style.color = '#ff6b00';
+    
+    // Reset multiplier display
+    const liveMult = document.getElementById('liveMult');
+    liveMult.parentElement.style.borderColor = '#ffd700';
+    liveMult.parentElement.style.boxShadow = '0 0 20px rgba(255,215,0,0.5)';
 }
 
 // Coin rain
 function createCoinRain() {
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 30; i++) {
         setTimeout(() => {
             const coin = document.createElement('div');
             coin.className = 'coin';
-            coin.textContent = ['💰', '🪙', '💎', '⭐'][Math.floor(Math.random() * 4)];
+            coin.textContent = ['💰', '🪙', '💎'][Math.floor(Math.random() * 3)];
             coin.style.left = Math.random() * 100 + '%';
             coin.style.animationDuration = (Math.random() * 1 + 1.5) + 's';
             document.body.appendChild(coin);
             setTimeout(() => coin.remove(), 3000);
-        }, i * 60);
+        }, i * 80);
     }
 }
 
@@ -1032,8 +1022,9 @@ function playBeep(freq, duration, type = 'sine') {
 }
 
 function playWinSound() {
-    const notes = [523, 659, 784, 1047, 1319];
-    notes.forEach((f, i) => setTimeout(() => playBeep(f, 0.15), i * 100));
+    [523, 659, 784, 1047, 1319].forEach((f, i) => 
+        setTimeout(() => playBeep(f, 0.15), i * 100)
+    );
 }
 
 function playLoseSound() {
