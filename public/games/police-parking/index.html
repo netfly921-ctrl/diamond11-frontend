@@ -19,7 +19,6 @@
             overflow-x: hidden;
         }
         
-        /* Top Bar - Diamond 11 Style */
         #topBar {
             position: fixed;
             top: 0; left: 0; right: 0;
@@ -43,9 +42,6 @@
             border-radius: 50%;
             font-size: 1.2rem;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         
         .title { 
@@ -70,9 +66,7 @@
             font-size: 0.9rem;
         }
         
-        /* ============================================ */
-        /* SCREEN 1: BETTING SCREEN */
-        /* ============================================ */
+        /* BETTING SCREEN */
         .bet-screen {
             padding: 75px 15px 20px;
             max-width: 450px;
@@ -82,7 +76,6 @@
         
         .bet-screen.hidden { display: none; }
         
-        /* Game Info Card */
         .game-info-card {
             background: linear-gradient(135deg, #5B21B6, #4A0E8F);
             border-radius: 20px;
@@ -117,7 +110,6 @@
         .game-info-card .icon {
             font-size: 5rem;
             margin-bottom: 15px;
-            filter: drop-shadow(0 0 15px rgba(255,215,0,0.5));
         }
         
         .game-info-card h2 {
@@ -134,7 +126,6 @@
             line-height: 1.5;
         }
         
-        /* Section Card */
         .section {
             background: #5B21B6;
             border-radius: 15px;
@@ -152,7 +143,6 @@
             font-weight: 700;
         }
         
-        /* Difficulty */
         .diff-options {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -194,7 +184,6 @@
             font-size: 1.4rem;
             font-weight: 900;
             color: #ffd700;
-            text-shadow: 0 0 10px rgba(255,215,0,0.5);
         }
         
         .diff-btn .info {
@@ -204,12 +193,10 @@
             margin-top: 3px;
         }
         
-        /* Bet Amount */
         .bet-input-row {
             display: flex;
             gap: 8px;
             margin-bottom: 10px;
-            align-items: center;
         }
         
         .bet-input {
@@ -241,15 +228,12 @@
             font-size: 0.75rem;
             font-weight: 700;
             cursor: pointer;
-            transition: 0.2s;
         }
         
         .qbtn:hover {
             background: rgba(255,215,0,0.3);
-            transform: translateY(-2px);
         }
         
-        /* Potential Win */
         .potential-win {
             background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,255,136,0.05));
             border: 2px solid rgba(0,255,136,0.5);
@@ -275,7 +259,6 @@
             text-shadow: 0 0 15px rgba(0,255,136,0.5);
         }
         
-        /* Start Button */
         .start-btn {
             width: 100%;
             padding: 20px;
@@ -294,12 +277,9 @@
         
         .start-btn:hover:not(:disabled) {
             transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(255,215,0,0.8);
         }
         
-        /* ============================================ */
-        /* SCREEN 2: GAME SCREEN */
-        /* ============================================ */
+        /* GAME SCREEN */
         .game-screen {
             position: fixed;
             top: 55px;
@@ -313,7 +293,7 @@
             display: flex;
         }
         
-        /* Game HUD */
+        /* HUD - No Timer */
         .game-hud {
             background: #3b0b72;
             padding: 10px 15px;
@@ -334,6 +314,8 @@
             gap: 8px;
             font-weight: 700;
             font-size: 0.85rem;
+            flex: 1;
+            justify-content: center;
         }
         
         .hud-item .hud-label {
@@ -351,7 +333,7 @@
             color: #00ff88;
         }
         
-        /* Iframe Container */
+        /* IFRAME WRAPPER */
         .iframe-wrapper {
             flex: 1;
             position: relative;
@@ -361,23 +343,22 @@
         
         .game-iframe {
             width: 100%;
-            height: calc(100% + 80px);
+            height: calc(100% + 200px);
             border: none;
             background: #000;
             position: absolute;
-            top: -40px;
+            top: -100px;
             left: 0;
         }
         
-        /* TOP OVERLAY - Hides ads */
         .top-overlay {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 40px;
+            height: 45px;
             background: #000;
-            z-index: 10;
+            z-index: 100;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -385,85 +366,81 @@
             font-weight: 700;
             font-size: 0.85rem;
             letter-spacing: 2px;
+            border-bottom: 1px solid #ffd700;
         }
         
-        /* BOTTOM OVERLAY - Hides ads */
         .bottom-overlay {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 40px;
-            background: linear-gradient(180deg, transparent, #000);
-            z-index: 10;
-            pointer-events: none;
+            height: 60px;
+            background: #000;
+            z-index: 100;
         }
         
-        /* ✅ RESULT BUTTONS PANEL */
-        .result-panel {
-            background: #3b0b72;
-            padding: 15px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            border-top: 2px solid #ffd700;
+        /* AD BLOCKER */
+        .ad-blocker {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #5B21B6, #4A0E8F);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+            color: white;
         }
         
-        /* ✅ WIN BUTTON (Player parked successfully) */
-        .win-btn {
-            padding: 15px;
-            background: linear-gradient(135deg, #00ff88, #00aa55);
-            color: #000;
-            border: none;
-            border-radius: 12px;
+        .ad-blocker.show { display: flex; }
+        
+        .ad-blocker .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255,215,0,0.2);
+            border-top: 5px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .ad-blocker-text {
+            color: #ffd700;
             font-weight: 900;
-            font-size: 1rem;
-            cursor: pointer;
-            letter-spacing: 1px;
-            box-shadow: 0 5px 20px rgba(0,255,136,0.4);
-            font-family: 'Poppins', sans-serif;
-            transition: 0.3s;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
         }
         
-        .win-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,255,136,0.6);
-        }
-        
-        /* ✅ LOSS BUTTON (Player crashed/failed) */
-        .loss-btn {
-            padding: 15px;
+        .skip-ad-btn {
+            padding: 12px 30px;
             background: linear-gradient(135deg, #ff4444, #cc0000);
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             font-weight: 900;
-            font-size: 1rem;
             cursor: pointer;
-            letter-spacing: 1px;
-            box-shadow: 0 5px 20px rgba(255,68,68,0.4);
+            font-size: 0.9rem;
             font-family: 'Poppins', sans-serif;
-            transition: 0.3s;
-        }
-        
-        .loss-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(255,68,68,0.6);
         }
         
         /* Instruction Banner */
         .instruction-banner {
             position: absolute;
-            top: 50px;
+            top: 55px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             border: 2px solid #ffd700;
             padding: 8px 20px;
             border-radius: 25px;
             font-weight: 700;
             color: #ffd700;
-            z-index: 20;
+            z-index: 50;
             font-size: 0.85rem;
             box-shadow: 0 0 20px rgba(255,215,0,0.4);
             text-align: center;
@@ -473,83 +450,69 @@
         
         @keyframes bannerPulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
+            50% { opacity: 0.7; }
         }
         
-        /* Confirm Modal */
-        .confirm-modal {
+        /* ✅ BOTTOM RESULT BUTTON - ONE BIG BUTTON */
+        .result-panel {
+            background: #3b0b72;
+            padding: 15px;
+            border-top: 2px solid #ffd700;
+        }
+        
+        .finish-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #ffd700, #ff9500);
+            color: #4A0E8F;
+            border: none;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 1.1rem;
+            cursor: pointer;
+            letter-spacing: 2px;
+            box-shadow: 0 5px 20px rgba(255,215,0,0.5);
+            font-family: 'Poppins', sans-serif;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .finish-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255,215,0,0.7);
+        }
+        
+        .finish-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Processing overlay */
+        .processing {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.9);
             display: none;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
+            gap: 20px;
             z-index: 10001;
-            padding: 20px;
         }
         
-        .confirm-modal.show { display: flex; }
+        .processing.show { display: flex; }
         
-        .confirm-box {
-            background: linear-gradient(135deg, #5B21B6, #4A0E8F);
-            border: 3px solid #ffd700;
-            border-radius: 20px;
-            padding: 30px 25px;
-            max-width: 320px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 0 40px rgba(255,215,0,0.4);
-        }
-        
-        .confirm-icon {
-            font-size: 3.5rem;
-            margin-bottom: 15px;
-        }
-        
-        .confirm-title {
+        .processing-text {
             color: #ffd700;
-            font-size: 1.3rem;
             font-weight: 900;
-            margin-bottom: 10px;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
         }
         
-        .confirm-msg {
-            color: rgba(255,255,255,0.9);
-            font-size: 0.95rem;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-        
-        .confirm-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        
-        .confirm-btn {
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 900;
-            font-size: 0.9rem;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-            transition: 0.3s;
-        }
-        
-        .confirm-yes {
-            background: linear-gradient(135deg, #00ff88, #00aa55);
-            color: #000;
-        }
-        
-        .confirm-no {
-            background: linear-gradient(135deg, #666, #444);
-            color: white;
-        }
-        
-        /* ============================================ */
-        /* SCREEN 3: RESULT SCREEN */
-        /* ============================================ */
+        /* RESULT SCREEN */
         .result-screen {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -662,7 +625,6 @@
             font-family: 'Poppins', sans-serif;
         }
         
-        /* Coin rain */
         .coin {
             position: fixed;
             font-size: 2rem;
@@ -679,7 +641,6 @@
 </head>
 <body>
 
-<!-- Top Bar -->
 <div id="topBar">
     <button class="back-btn" onclick="goBack()">←</button>
     <div class="title">🚔 POLICE PARKING</div>
@@ -689,41 +650,35 @@
     </div>
 </div>
 
-<!-- ============================================ -->
-<!-- SCREEN 1: BETTING SCREEN -->
-<!-- ============================================ -->
+<!-- BETTING SCREEN -->
 <div class="bet-screen" id="betScreen">
-    
-    <!-- Game Info -->
     <div class="game-info-card">
         <div class="icon">🚔</div>
         <h2>POLICE PARKING</h2>
-        <p>Park the police car in the marked spot! Click <b>PARKED SUCCESSFULLY</b> to win, or <b>CRASHED/FAILED</b> if you crash.</p>
+        <p>Play the parking game as long as you want! When you're done, click <b>FINISH GAME</b> to see result.</p>
     </div>
     
-    <!-- Difficulty -->
     <div class="section">
         <div class="section-title">🎯 Choose Difficulty</div>
         <div class="diff-options">
             <div class="diff-btn active" data-diff="easy" onclick="setDifficulty('easy')">
                 <span class="level">EASY</span>
                 <span class="mult">2x</span>
-                <span class="info">Simple</span>
+                <span class="info">40% Win</span>
             </div>
             <div class="diff-btn" data-diff="medium" onclick="setDifficulty('medium')">
                 <span class="level">MEDIUM</span>
                 <span class="mult">3x</span>
-                <span class="info">Challenging</span>
+                <span class="info">25% Win</span>
             </div>
             <div class="diff-btn" data-diff="hard" onclick="setDifficulty('hard')">
                 <span class="level">HARD</span>
                 <span class="mult">5x</span>
-                <span class="info">Expert</span>
+                <span class="info">15% Win</span>
             </div>
         </div>
     </div>
     
-    <!-- Bet Amount -->
     <div class="section">
         <div class="section-title">💰 Bet Amount</div>
         <div class="bet-input-row">
@@ -739,24 +694,20 @@
         </div>
     </div>
     
-    <!-- Potential Win -->
     <div class="potential-win">
         <div class="label">💎 You Can Win</div>
         <div class="amount">₹<span id="potentialWin">20</span></div>
     </div>
     
-    <!-- Start Button -->
     <button class="start-btn" onclick="startGame()">
         🚨 START GAME
     </button>
 </div>
 
-<!-- ============================================ -->
-<!-- SCREEN 2: GAME SCREEN -->
-<!-- ============================================ -->
+<!-- GAME SCREEN -->
 <div class="game-screen" id="gameScreen">
     
-    <!-- Game HUD -->
+    <!-- HUD - No Timer! -->
     <div class="game-hud">
         <div class="hud-item">
             <span class="hud-label">Bet:</span>
@@ -768,13 +719,18 @@
         </div>
     </div>
     
-    <!-- Iframe with Overlays -->
     <div class="iframe-wrapper">
-        <div class="top-overlay">🎮 PARK THE CAR</div>
+        <div class="top-overlay">🎮 PLAYING GAME</div>
         
-        <!-- Instruction Banner -->
         <div class="instruction-banner">
-            👆 Park in marked spot, then click WIN button
+            🎯 Play the game, then click FINISH below
+        </div>
+        
+        <!-- AD BLOCKER -->
+        <div class="ad-blocker" id="adBlocker">
+            <div class="spinner"></div>
+            <div class="ad-blocker-text">SKIPPING AD...</div>
+            <button class="skip-ad-btn" onclick="hideAd()">⏭️ SKIP AD</button>
         </div>
         
         <iframe 
@@ -788,35 +744,21 @@
         <div class="bottom-overlay"></div>
     </div>
     
-    <!-- ✅ WIN / LOSS BUTTONS -->
+    <!-- ✅ ONE FINISH BUTTON - Auto decides win/loss -->
     <div class="result-panel">
-        <button class="win-btn" onclick="showConfirm('win')">
-            ✅ PARKED SUCCESSFULLY
-        </button>
-        <button class="loss-btn" onclick="showConfirm('loss')">
-            💥 CRASHED / FAILED
+        <button class="finish-btn" id="finishBtn" onclick="finishGame()">
+            🏁 FINISH GAME
         </button>
     </div>
 </div>
 
-<!-- ============================================ -->
-<!-- CONFIRM MODAL -->
-<!-- ============================================ -->
-<div class="confirm-modal" id="confirmModal">
-    <div class="confirm-box">
-        <div class="confirm-icon" id="confirmIcon">✅</div>
-        <div class="confirm-title" id="confirmTitle">Confirm Win?</div>
-        <div class="confirm-msg" id="confirmMsg">Are you sure you parked successfully?</div>
-        <div class="confirm-buttons">
-            <button class="confirm-btn confirm-yes" onclick="confirmResult()">YES</button>
-            <button class="confirm-btn confirm-no" onclick="cancelConfirm()">NO</button>
-        </div>
-    </div>
+<!-- Processing Overlay -->
+<div class="processing" id="processing">
+    <div class="spinner" style="width: 80px; height: 80px; border: 6px solid rgba(255,215,0,0.2); border-top: 6px solid #ffd700; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    <div class="processing-text">CALCULATING RESULT...</div>
 </div>
 
-<!-- ============================================ -->
-<!-- SCREEN 3: RESULT SCREEN -->
-<!-- ============================================ -->
+<!-- RESULT SCREEN -->
 <div class="result-screen" id="resultScreen">
     <div class="result-box">
         <div class="result-icon" id="resultIcon">🎉</div>
@@ -847,25 +789,25 @@
 
 <script>
 // ============================================
-// ✅ GAME CONFIGURATION
+// ✅ CONFIGURATION
 // ============================================
 const GAME_URL = "https://html5.gamemonetize.co/zo8ocq9uu0gjavl3iazgiessapj6ov6n/";
 
-// ✅ SIMPLE DIFFICULTY (Just multipliers)
+// ✅ WIN RATES per difficulty
 const DIFFICULTIES = {
-    easy:   { mult: 2, name: 'Easy' },
-    medium: { mult: 3, name: 'Medium' },
-    hard:   { mult: 5, name: 'Hard' }
+    easy:   { mult: 2, name: 'Easy',   winChance: 0.40 },  // 40% win
+    medium: { mult: 3, name: 'Medium', winChance: 0.25 },  // 25% win
+    hard:   { mult: 5, name: 'Hard',   winChance: 0.15 }   // 15% win
 };
 
 // ============================================
-// ✅ WALLET INTEGRATION
+// ✅ STATE
 // ============================================
 let balance = 0;
 let currentBet = 10;
 let selectedDifficulty = 'easy';
 let gameActive = false;
-let pendingAction = null; // 'win' or 'loss'
+let adCheckInterval;
 
 function syncBalance() {
     balance = window.CasinoGame ? window.CasinoGame.balance : 0;
@@ -881,16 +823,14 @@ function waitForWallet() {
 }
 waitForWallet();
 
-// Back button
 function goBack() {
     if (gameActive) {
         if (!confirm('Quit game? You will lose your bet!')) return;
-        handleLoss(true);
+        forceLoss();
     }
     window.history.back();
 }
 
-// Set difficulty
 function setDifficulty(diff) {
     selectedDifficulty = diff;
     document.querySelectorAll('.diff-btn').forEach(btn => {
@@ -899,7 +839,6 @@ function setDifficulty(diff) {
     updatePotentialWin();
 }
 
-// Set bet amount
 function setBet(val) {
     const inp = document.getElementById('betInput');
     if (val === 'half') inp.value = Math.max(10, Math.floor(+inp.value / 2));
@@ -908,7 +847,6 @@ function setBet(val) {
     updatePotentialWin();
 }
 
-// Update potential win
 function updatePotentialWin() {
     const bet = parseFloat(document.getElementById('betInput').value) || 0;
     const mult = DIFFICULTIES[selectedDifficulty].mult;
@@ -916,13 +854,12 @@ function updatePotentialWin() {
 }
 
 // ============================================
-// ✅ START GAME - No timer, no crash!
+// ✅ START GAME - No timer!
 // ============================================
 async function startGame() {
     const bet = parseFloat(document.getElementById('betInput').value) || 10;
     if (bet < 10) return alert('Min bet ₹10');
     
-    // Deduct from wallet
     const success = await window.CasinoGame.placeBet(bet);
     if (!success) return alert('Insufficient balance!');
     syncBalance();
@@ -933,7 +870,6 @@ async function startGame() {
     const diff = DIFFICULTIES[selectedDifficulty];
     const winAmount = Math.floor(bet * diff.mult);
     
-    // Setup HUD
     document.getElementById('hudBet').textContent = bet;
     document.getElementById('hudWin').textContent = winAmount;
     
@@ -941,60 +877,91 @@ async function startGame() {
     document.getElementById('betScreen').classList.add('hidden');
     document.getElementById('gameScreen').classList.add('active');
     
-    // Load iframe
+    // Show ad blocker
+    showAdBlocker();
+    
+    // Load game
     document.getElementById('gameFrame').src = GAME_URL;
+    
+    // Auto hide ad blocker after 3 sec
+    setTimeout(() => {
+        hideAd();
+        startAdChecker();
+    }, 3000);
 }
 
 // ============================================
-// ✅ SHOW CONFIRM (Before final result)
+// ✅ AD BLOCKER
 // ============================================
-function showConfirm(action) {
-    pendingAction = action;
-    const modal = document.getElementById('confirmModal');
-    const icon = document.getElementById('confirmIcon');
-    const title = document.getElementById('confirmTitle');
-    const msg = document.getElementById('confirmMsg');
-    
-    if (action === 'win') {
-        icon.textContent = '✅';
-        title.textContent = 'Confirm Win?';
-        msg.textContent = 'Did you park the car successfully in the marked spot?';
-    } else {
-        icon.textContent = '💥';
-        title.textContent = 'Confirm Loss?';
-        msg.textContent = 'Did you crash or fail to park? Your bet will be lost.';
-    }
-    
-    modal.classList.add('show');
+function showAdBlocker() {
+    document.getElementById('adBlocker').classList.add('show');
 }
 
-function cancelConfirm() {
-    document.getElementById('confirmModal').classList.remove('show');
-    pendingAction = null;
+function hideAd() {
+    document.getElementById('adBlocker').classList.remove('show');
+}
+
+function startAdChecker() {
+    adCheckInterval = setInterval(() => {
+        if (!gameActive) {
+            clearInterval(adCheckInterval);
+            return;
+        }
+        
+        try {
+            const iframe = document.getElementById('gameFrame');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+            
+            if (iframeDoc) {
+                const ads = iframeDoc.querySelectorAll('[id*="ad"], [class*="ad"], [id*="google"], iframe[src*="doubleclick"], iframe[src*="googleads"]');
+                if (ads.length > 0) {
+                    ads.forEach(ad => {
+                        ad.style.display = 'none';
+                        ad.remove();
+                    });
+                }
+            }
+        } catch(e) {}
+    }, 1000);
 }
 
 // ============================================
-// ✅ CONFIRM RESULT
+// ✅ FINISH GAME - Auto decide win/loss
 // ============================================
-async function confirmResult() {
-    document.getElementById('confirmModal').classList.remove('show');
+async function finishGame() {
+    if (!gameActive) return;
     
-    if (pendingAction === 'win') {
-        await handleWin();
-    } else if (pendingAction === 'loss') {
-        handleLoss();
-    }
+    if (!confirm('Finish game and see result?')) return;
     
-    pendingAction = null;
+    gameActive = false;
+    clearInterval(adCheckInterval);
+    
+    // Show processing
+    document.getElementById('processing').classList.add('show');
+    document.getElementById('finishBtn').disabled = true;
+    
+    // Simulate calculation (2 seconds for suspense)
+    setTimeout(async () => {
+        document.getElementById('processing').classList.remove('show');
+        
+        // ✅ Auto decide based on win chance
+        const diff = DIFFICULTIES[selectedDifficulty];
+        const willWin = Math.random() < diff.winChance;
+        
+        console.log('🎮 Result:', willWin ? 'WIN' : 'LOSS');
+        
+        if (willWin) {
+            await handleWin();
+        } else {
+            handleLoss();
+        }
+    }, 2000);
 }
 
 // ============================================
 // ✅ WIN HANDLER
 // ============================================
 async function handleWin() {
-    if (!gameActive) return;
-    
-    gameActive = false;
     const diff = DIFFICULTIES[selectedDifficulty];
     const winAmount = Math.floor(currentBet * diff.mult);
     
@@ -1023,20 +990,14 @@ async function handleWin() {
 // ============================================
 // ✅ LOSS HANDLER
 // ============================================
-function handleLoss(silent = false) {
-    if (!gameActive) return;
-    
-    gameActive = false;
+function handleLoss() {
     const diff = DIFFICULTIES[selectedDifficulty];
     
-    if (silent) return; // For back button, just clean up
-    
-    // Show result
     document.getElementById('resBet').textContent = currentBet;
     document.getElementById('resMult').textContent = diff.mult;
     document.getElementById('resDiff').textContent = diff.name;
     document.getElementById('resultIcon').textContent = '💥';
-    document.getElementById('resultTitle').textContent = 'CRASHED!';
+    document.getElementById('resultTitle').textContent = 'GAME OVER!';
     document.getElementById('resultTitle').className = 'result-title lose';
     document.getElementById('resSign').textContent = '-';
     document.getElementById('resAmount').textContent = currentBet;
@@ -1048,15 +1009,20 @@ function handleLoss(silent = false) {
     }, 300);
 }
 
-// Play again
+// Force loss (for quit)
+function forceLoss() {
+    gameActive = false;
+    clearInterval(adCheckInterval);
+}
+
 function playAgain() {
     document.getElementById('resultScreen').classList.remove('show');
     document.getElementById('gameScreen').classList.remove('active');
     document.getElementById('betScreen').classList.remove('hidden');
     document.getElementById('gameFrame').src = '';
+    document.getElementById('finishBtn').disabled = false;
 }
 
-// Coin rain
 function createCoinRain() {
     for (let i = 0; i < 30; i++) {
         setTimeout(() => {
@@ -1071,7 +1037,6 @@ function createCoinRain() {
     }
 }
 
-// Sound effects
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playBeep(freq, duration, type = 'sine') {
@@ -1101,7 +1066,6 @@ function playLoseSound() {
     setTimeout(() => playBeep(100, 0.4, 'sawtooth'), 300);
 }
 
-// Initialize
 updatePotentialWin();
 </script>
 </body>
